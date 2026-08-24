@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automation Studio - 網頁自動化控制台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --primary: #38bdf8;
+      --accent: #818cf8;
+      --accent-purple: #c084fc;
+      --success: #34d399;
+      --error: #f87171;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(192, 132, 252, 0.1) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .app-container { max-width: 1400px; margin: 0 auto; }
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .navbar { display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 20px; color: #fff;
+    }
+    .brand-title { font-family: var(--font-heading); font-size: 22px; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%; padding: 10px 14px; background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color); border-radius: 8px; color: #fff; outline: none;
+    }
+    .btn-primary {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #000; font-weight: 700; font-family: var(--font-heading); cursor: pointer;
+    }
+    .console-box {
+      background: #050811; border: 1px solid var(--border-color); border-radius: 10px;
+      padding: 16px; font-family: monospace; font-size: 13px; height: 260px; overflow-y: auto;
+    }
+    .log-line { margin-bottom: 6px; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .tag-info { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
+    .tag-success { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    .table th, .table td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); text-align: left; }
+    .table th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="glass-panel navbar">
+      <div class="brand">
+        <div class="brand-icon">A</div>
+        <div>
+          <h1 class="brand-title">Automation Studio</h1>
+          <p style="font-size: 12px; color: var(--text-muted);">網頁自動化操控控制台 & Playwright 爬蟲引擎</p>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: var(--success);">● 靜態模式 (即時展示)</div>
+    </header>
+
+    <div class="grid">
+      <div class="glass-panel">
+        <h3 style="margin-bottom: 16px; font-family: var(--font-heading);">自動化任務選單</h3>
+        <div class="form-group">
+          <label class="form-label">目標網址</label>
+          <input type="text" class="form-input" value="https://news.ycombinator.com" id="target-url">
+        </div>
+        <div class="form-group">
+          <label class="form-label">自動化行為模式</label>
+          <select class="form-select">
+            <option>網頁結構化資料擷取與爬蟲</option>
+            <option>表單自動填寫測試</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">指定 CSS 選擇器</label>
+          <input type="text" class="form-input" value=".titleline > a">
+        </div>
+        <button class="btn-primary" onclick="simulateTask()">啟動 Playwright 自動化任務</button>
+      </div>
+
+      <div class="glass-panel">
+        <h3 style="margin-bottom: 16px; font-family: var(--font-heading);">即時執行日誌與監控</h3>
+        <div class="console-box" id="console">
+          <div class="log-line"><span class="tag tag-info">INFO</span> 系統登入完成，等待自動化指令發起...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-panel">
+      <h3 style="margin-bottom: 16px; font-family: var(--font-heading);">自動化資料擷取數據集</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>元素類型</th>
+            <th>網頁文字內容</th>
+            <th>目標連結</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td>#1</td>
+            <td><span class="tag tag-info">Heading</span></td>
+            <td>Hacker News Top Stories</td>
+            <td>https://news.ycombinator.com</td>
+          </tr>
+          <tr>
+            <td>#2</td>
+            <td><span class="tag tag-info">Link</span></td>
+            <td>Show HN: AI Web Automation Framework</td>
+            <td>https://news.ycombinator.com/item?id=12345</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function simulateTask() {
+      const consoleBox = document.getElementById('console');
+      const url = document.getElementById('target-url').value;
+      consoleBox.innerHTML += `<div class="log-line"><span class="tag tag-info">INFO</span> 準備啟動 Playwright 瀏覽器控制引擎...</div>`;
+      consoleBox.innerHTML += `<div class="log-line"><span class="tag tag-info">INFO</span> 正在開啓目標網址：${url}</div>`;
+      setTimeout(() => {
+        consoleBox.innerHTML += `<div class="log-line"><span class="tag tag-success">SUCCESS</span> 網頁載入完成，資料擷取成功（共 2 筆項目）</div>`;
+        consoleBox.scrollTop = consoleBox.scrollHeight;
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

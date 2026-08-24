@@ -1,0 +1,10 @@
+# 本機環境與敏感檔案忽略清單
+.vscode/
+.gemini/
+.agents/
+node_modules/
+*.log
+~$*.xlsx
+~$*.xls
+.DS_Store
+Thumbs.db

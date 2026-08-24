@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>轉爐石台北港專案 (617000928) - 數據與船次進度儀表板</title>
+  <meta name="description" content="中聯資過磅資料(台北港轉爐石)彙總數據分析與船次作業進度儀表板。">
+  
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Third Party Libraries via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div style="font-weight: 600; font-size: 1.1rem; color: #fff;" id="loadingText">正在讀取並解析過磅數據...</div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);" id="loadingSubtext">本地解析中，數據不上傳</div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <i data-lucide="truck"></i>
+      </div>
+      <div>
+        <span>轉爐石台北港專案</span>
+        <span class="brand-subtitle">過磅與船次進度分析 (617000928)</span>
+      </div>
+    </div>
+
+    <!-- Main Navigation View Tabs -->
+    <div class="view-tabs-container">
+      <div class="view-tab active" id="tabOverview" data-view="overview">
+        <i data-lucide="layout-dashboard"></i> 專案整體總覽
+      </div>
+      <div class="view-tab" id="tabVoyage" data-view="voyage">
+        <i data-lucide="ship"></i> 船次作業進度分析
+      </div>
+      <div class="view-tab" id="tabVoyageRate" data-view="voyageRate">
+        <i data-lucide="gauge"></i> 長期船次速率分析
+      </div>
+    </div>
+
+    <!-- Active Path Banner -->
+    <div class="path-banner" id="pathBanner" title="H:\我的雲端硬碟\APPsheet\data\轉爐石台北港專案-617000928">
+      <i data-lucide="folder-git-2"></i>
+      <span id="pathBannerText">H:\我的雲端硬碟\APPsheet\data\轉爐石台北港專案-617000928</span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Sync / Pick Buttons -->
+      <button class="btn btn-primary" id="btnSyncFixedFolder" title="一鍵同步與更新固定資料夾數據 (H:\我的雲端硬碟\APPsheet\data\轉爐石台北港專案-617000928)">
+        <i data-lucide="refresh-cw"></i>
+        <span>同步資料夾數據</span>
+      </button>
+
+      <button class="btn btn-secondary" id="btnPickFolder">
+        <i data-lucide="folder-open"></i>
+        <span>開啟專案資料夾</span>
+      </button>
+
+      <button class="btn btn-secondary" id="btnPickFiles">
+        <i data-lucide="file-spreadsheet"></i>
+        <span>選擇 Excel</span>
+      </button>
+
+      <button class="btn btn-emerald" id="btnLoadDemo">
+        <i data-lucide="sparkles"></i>
+        <span>示範數據</span>
+      </button>
+
+      <a href="mobile.html" target="_blank" class="btn btn-secondary" style="text-decoration:none;" title="開啟手機版同步分析儀表板 (mobile.html)">
+        <i data-lucide="smartphone"></i>
+        <span>手機版分析</span>
+      </a>
+
+      <button class="btn btn-icon" id="btnThemeToggle" title="切換深色/淺色主題">
+        <i data-lucide="moon" id="themeIcon"></i>
+      </button>
+
+      <!-- Hidden inputs -->
+      <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple style="display: none;">
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="dashboard-container">
+
+    <!-- ==================== VIEW 1: OVERVIEW ==================== -->
+    <div id="overviewView" class="page-view">
+      <!-- Controls & Sheet Selector -->
+      <section class="controls-card">
+        <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-muted);">
+              <i data-lucide="layers" style="width:16px; vertical-align:middle;"></i> 工作表:
+            </span>
+            <div class="sheet-selector-group" id="sheetTabs">
+              <div class="sheet-tab active">載入中...</div>
+            </div>
+          </div>
+
+          <!-- 年份選擇方塊 -->
+          <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card, rgba(30, 41, 59, 0.7)); padding: 0.4rem 0.85rem; border-radius: 10px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px);">
+            <i data-lucide="calendar-range" style="width:16px; color: var(--accent-cyan); flex-shrink: 0;"></i>
+            <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-muted); white-space: nowrap;">過磅年份:</span>
+            <select id="yearSelect" style="background: transparent; border: none; font-size: 0.875rem; font-weight: 700; color: var(--text-main); cursor: pointer; outline: none; padding-right: 0.5rem;">
+              <option value="ALL">🗓️ 全部年份 (跨年度總覽)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button class="btn" id="btnExportCSV">
+            <i data-lucide="download"></i>
+            <span>匯出 CSV</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Executive KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue); --card-icon-color: var(--accent-cyan);">
+          <div class="kpi-header">
+            <span class="kpi-title">總載運淨重 (Net Weight)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="scale"></i></div>
+          </div>
+          <div class="kpi-value" id="kpiTotalWeight">0 <span style="font-size:1rem;">噸</span></div>
+          <div class="kpi-footer">
+            <span class="kpi-trend" id="kpiSubWeight"><i data-lucide="trending-up" style="width:14px;"></i> 專案累積運量</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-purple); --card-icon-color: var(--accent-purple);">
+          <div class="kpi-header">
+            <span class="kpi-title">總過磅車次 (Transactions)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="truck"></i></div>
+          </div>
+          <div class="kpi-value" id="kpiTotalTrips">0 <span style="font-size:1rem;">車次</span></div>
+          <div class="kpi-footer">
+            <span id="kpiSubTrips">完成過磅登記筆數</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-emerald); --card-icon-color: var(--accent-emerald);">
+          <div class="kpi-header">
+            <span class="kpi-title">平均單車淨重 (Avg Load)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="bar-chart-3"></i></div>
+          </div>
+          <div class="kpi-value" id="kpiAvgWeight">0 <span style="font-size:1rem;">噸 / 車</span></div>
+          <div class="kpi-footer">
+            <span id="kpiSubAvg">單趟平均載運效能</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-amber); --card-icon-color: var(--accent-amber);">
+          <div class="kpi-header">
+            <span class="kpi-title">活躍車輛數 (Unique Trucks)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="users"></i></div>
+          </div>
+          <div class="kpi-value" id="kpiUniqueTrucks">0 <span style="font-size:1rem;">輛</span></div>
+          <div class="kpi-footer">
+            <span id="kpiSubTrucks">參與運送之不同車號數</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-purple); --card-icon-color: var(--accent-rose);">
+          <div class="kpi-header">
+            <span class="kpi-title">各年度載運重量彙總 (Yearly Tonnage)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="calendar-range"></i></div>
+          </div>
+          <div class="kpi-value" id="kpiYearlyWeightList" style="font-size: 0.95rem; line-height: 1.5; font-weight: 600; min-height: 2.8rem; display: flex; flex-direction: column; justify-content: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">無年份數據</span>
+          </div>
+          <div class="kpi-footer">
+            <span id="kpiSubYearlyWeight"><i data-lucide="info" style="width:14px; vertical-align:middle;"></i> 統計各年度過磅總淨重</span>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Visual Charts Grid -->
+      <section class="charts-grid">
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="trending-up" style="color: var(--accent-blue);"></i>
+              <div>
+                <div class="chart-title">過磅載運量趨勢分析 (運量噸數)</div>
+                <div class="chart-subtitle">統計各月份 / 日期之過磅總淨重趨勢</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartTrend"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="award" style="color: var(--accent-purple);"></i>
+              <div>
+                <div class="chart-title">載運量前 10 大車號</div>
+                <div class="chart-subtitle">累積載運淨重最高之車輛排行榜</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartTopTrucks"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="clock" style="color: var(--accent-amber);"></i>
+              <div>
+                <div class="chart-title">每日過磅時段淨重分佈 (時段高峰)</div>
+                <div class="chart-subtitle">分析各時間段 (00:00 - 23:00) 載運淨重 (噸)</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartHourly"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="pie-chart" style="color: var(--accent-emerald);"></i>
+              <div>
+                <div class="chart-title">毛重、空重與淨重平均比對</div>
+                <div class="chart-subtitle">單車平均重量結構分析</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartWeightStructure"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Data Table -->
+      <section class="table-card">
+        <div class="table-toolbar">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="table" style="color: var(--accent-cyan);"></i>
+            <h3 style="font-size: 1.1rem; font-weight: 600;">過磅數據明細表</h3>
+            <span style="font-size: 0.8rem; color: var(--text-dim);" id="tableRowCount">(共 0 筆)</span>
+          </div>
+
+          <div class="search-input-wrapper">
+            <i data-lucide="search"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="搜尋車號、日期、過磅單號、客戶...">
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="dataTable">
+            <thead>
+              <tr id="tableHeaderRow">
+                <th>載入中...</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td style="text-align:center; padding: 2rem; color: var(--text-muted);">
+                  請開啟專案資料夾或選擇 Excel 數據檔案
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-pagination">
+          <div>
+            <span>每頁顯示 </span>
+            <select id="pageSizeSelect" style="background: rgba(0,0,0,0.2); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 4px; padding: 2px 6px;">
+              <option value="15">15</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <span> 筆資料</span>
+          </div>
+
+          <div class="pagination-controls">
+            <button class="btn btn-icon" id="btnPrevPage" disabled><i data-lucide="chevron-left"></i></button>
+            <span id="pageInfo" style="margin: 0 0.5rem;">第 1 / 1 頁</span>
+            <button class="btn btn-icon" id="btnNextPage" disabled><i data-lucide="chevron-right"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Project Media & Files Explorer Card -->
+      <section class="table-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="folder-archive" style="color: var(--accent-purple);"></i>
+            <h3 style="font-size: 1.1rem; font-weight: 600;">專案檔案與媒體資料 (Project Files)</h3>
+          </div>
+        </div>
+
+        <div class="file-grid" id="fileExplorerGrid">
+          <div class="file-item-card">
+            <div class="file-icon-box"><i data-lucide="file-spreadsheet"></i></div>
+            <div class="file-info">
+              <div class="file-name">中聯資過磅資料(台北港轉爐石)彙總-113年.xlsx</div>
+              <div class="file-meta">8.85 MB • Excel 數據報表</div>
+            </div>
+          </div>
+
+          <div class="file-item-card">
+            <div class="file-icon-box"><i data-lucide="file-spreadsheet"></i></div>
+            <div class="file-info">
+              <div class="file-name">中聯資過磅資料(台北港轉爐石)彙總-109-112年.xlsx</div>
+              <div class="file-meta">9.35 MB • Excel 數據報表</div>
+            </div>
+          </div>
+
+          <div class="file-item-card" id="cardPhotoPreview">
+            <div class="file-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);"><i data-lucide="image"></i></div>
+            <div class="file-info">
+              <div class="file-name">208047.jpg</div>
+              <div class="file-meta">215 KB • 專案現場作業相片</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+
+    <!-- ==================== VIEW 2: SHIP VOYAGE ANALYTICS ==================== -->
+    <div id="voyageView" class="page-view hidden">
+      <!-- Voyage Header & Selection Control -->
+      <section class="controls-card">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <span style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="ship"></i> 選擇裝船作業船次:
+          </span>
+          <select id="voyageSelect" class="voyage-select">
+            <option value="">辨識船次中...</option>
+          </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <span class="badge badge-purple" id="badgeVoyageDates"><i data-lucide="calendar"></i> 2024/03/12 ~ 03/15</span>
+          <span class="badge badge-emerald" id="badgeVoyageDuration"><i data-lucide="clock"></i> 作業歷時 4 天</span>
+          <span class="badge badge-amber" id="badgeVoyageTrips"><i data-lucide="truck"></i> 總車次 420 趟</span>
+        </div>
+      </section>
+
+      <!-- Voyage Specific KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue); --card-icon-color: var(--accent-cyan);">
+          <div class="kpi-header">
+            <span class="kpi-title">該船次累計裝載噸數</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="anchor"></i></div>
+          </div>
+          <div class="kpi-value" id="vKpiTotalWeight">0 <span style="font-size:1rem;">噸</span></div>
+          <div class="kpi-footer">
+            <span class="kpi-trend">本船次裝船總量</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-emerald); --card-icon-color: var(--accent-emerald);">
+          <div class="kpi-header">
+            <span class="kpi-title">單日最高裝載量 (Peak Day)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="trending-up"></i></div>
+          </div>
+          <div class="kpi-value" id="vKpiPeakDay">0 <span style="font-size:1rem;">噸 / 日</span></div>
+          <div class="kpi-footer">
+            <span id="vKpiPeakDayDate">創最高運量日期</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-amber); --card-icon-color: var(--accent-amber);">
+          <div class="kpi-header">
+            <span class="kpi-title">最高單小時作業速率 (Peak Hour)</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="zap"></i></div>
+          </div>
+          <div class="kpi-value" id="vKpiPeakHour">0 <span style="font-size:1rem;">噸 / 小時</span></div>
+          <div class="kpi-footer">
+            <span id="vKpiPeakHourTrips">創最高作業時段與日期</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue); --card-icon-color: var(--accent-cyan);">
+          <div class="kpi-header">
+            <span class="kpi-title">本船次平均每小時作業速率</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="gauge"></i></div>
+          </div>
+          <div class="kpi-value" id="vKpiAvgHourlyRate">0 <span style="font-size:1rem;">噸 / 小時</span></div>
+          <div class="kpi-footer">
+            <span id="vKpiSubAvgHourlyRate">依實際作業鐘點數計算</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-purple); --card-icon-color: var(--accent-purple);">
+          <div class="kpi-header">
+            <span class="kpi-title">參作業車輛與平均運轉</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="activity"></i></div>
+          </div>
+          <div class="kpi-value" id="vKpiTrucksCount">0 <span style="font-size:1rem;">輛</span></div>
+          <div class="kpi-footer">
+            <span id="vKpiAvgTripsPerTruck">平均單車載運 0 趟</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Voyage Charts Section 1 -->
+      <section class="charts-grid">
+        <!-- Voyage Chart 1: S-Curve Cumulative Progress -->
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="line-chart" style="color: var(--accent-cyan);"></i>
+              <div>
+                <div class="chart-title">本船次裝船累計進度 S-曲線 (Cumulative Progress)</div>
+                <div class="chart-subtitle">即時追蹤開工至完工之累計過磅噸數進度</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageSCurve"></canvas>
+          </div>
+        </div>
+
+        <!-- Voyage Chart 2: Daily Weight Comparison -->
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="calendar" style="color: var(--accent-emerald);"></i>
+              <div>
+                <div class="chart-title">每日作業量對比 (Day 1 ~ Day N)</div>
+                <div class="chart-subtitle">比較船次期間各天裝載噸數</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageDaily"></canvas>
+          </div>
+        </div>
+
+        <!-- Voyage Chart 3: Hourly Throughput -->
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="clock" style="color: var(--accent-amber);"></i>
+              <div>
+                <div class="chart-title">本船次每小時作業量 (Hourly Throughput)</div>
+                <div class="chart-subtitle">分析各鐘點 (00:00~23:00) 裝運噸數與效率</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageHourly"></canvas>
+          </div>
+        </div>
+
+        <!-- Voyage Chart 4: Vehicle Top Performance -->
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="truck" style="color: var(--accent-purple);"></i>
+              <div>
+                <div class="chart-title">本船次車輛運載量與車次排行榜 Top 8</div>
+                <div class="chart-subtitle">該船次車輛運轉總噸數比對</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageTrucks"></canvas>
+          </div>
+        </div>
+
+        <!-- Voyage Chart 5: Hourly Average Operation Rate Line Chart -->
+        <div class="chart-card col-12">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="trending-up" style="color: var(--accent-cyan);"></i>
+              <div>
+                <div class="chart-title">各日期每小時作業速率 (Hourly Operation Rate)</div>
+                <div class="chart-subtitle" id="vHourlyRateSubtitle">區分不同日期之各鐘點 (00:00~23:00) 作業速率對比</div>
+              </div>
+            </div>
+            <select id="vHourlyDateSelect" style="background: rgba(15, 23, 42, 0.7); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 0.25rem 0.6rem; font-size: 0.78rem; font-weight: 600; outline: none; cursor: pointer;">
+              <option value="ALL_COMPARE">🌐 各日期對比 (All Dates)</option>
+              <option value="TIMELINE">📈 連續時間軸 (Timeline)</option>
+              <option value="AVG">📊 船次平均 (Average)</option>
+            </select>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageHourlyAvgRate"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Voyage Vehicle Efficiency Table Section -->
+      <section class="table-card">
+        <div class="table-toolbar">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="gauge" style="color: var(--accent-amber);"></i>
+            <h3 style="font-size: 1.1rem; font-weight: 600;">本船次車輛作業效率與分析明細表</h3>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>車號 (Truck No)</th>
+                <th>裝運趟次 (Trips)</th>
+                <th>累計載運淨重 (Tons)</th>
+                <th>單車平均載重 (Avg Load)</th>
+                <th>作業天數</th>
+                <th>日均趟次 (Trips/Day)</th>
+                <th>效率評等 (Performance)</th>
+              </tr>
+            </thead>
+            <tbody id="vTruckEfficiencyTableBody">
+              <tr>
+                <td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-muted);">
+                  選擇船次以載入車輛作業效率分析
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+
+    <!-- ==================== VIEW 3: LONG-TERM VOYAGE HOURLY RATE ANALYTICS ==================== -->
+    <div id="voyageRateView" class="page-view hidden">
+      <!-- Controls Card -->
+      <section class="controls-card">
+        <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+          <span style="font-size: 0.95rem; font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="gauge"></i> 長期各船次作業速率比較 (每小時過磅淨重噸數分析)
+          </span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <button class="btn" id="btnExportRateCSV">
+            <i data-lucide="download"></i>
+            <span>匯出速率分析 CSV</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Long-Term Voyage Rate Executive KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue); --card-icon-color: var(--accent-cyan);">
+          <div class="kpi-header">
+            <span class="kpi-title">歷史平均每小時作業速率</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="gauge"></i></div>
+          </div>
+          <div class="kpi-value" id="vrKpiAvgRate">0 <span style="font-size:1rem;">噸 / 小時</span></div>
+          <div class="kpi-footer">
+            <span id="vrKpiSubAvgRate">所有船次平均單時產能</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-emerald); --card-icon-color: var(--accent-emerald);">
+          <div class="kpi-header">
+            <span class="kpi-title">歷史最高船次作業速率</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="trophy"></i></div>
+          </div>
+          <div class="kpi-value" id="vrKpiMaxRate">0 <span style="font-size:1rem;">噸 / 小時</span></div>
+          <div class="kpi-footer">
+            <span id="vrKpiSubMaxRate">最高效率船次名稱</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-amber); --card-icon-color: var(--accent-amber);">
+          <div class="kpi-header">
+            <span class="kpi-title">歷史單小時過磅最高紀錄</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="zap"></i></div>
+          </div>
+          <div class="kpi-value" id="vrKpiPeakHourRate">0 <span style="font-size:1rem;">噸 / 小時</span></div>
+          <div class="kpi-footer">
+            <span id="vrKpiSubPeakHour">創單小時極限峰值</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-purple); --card-icon-color: var(--accent-purple);">
+          <div class="kpi-header">
+            <span class="kpi-title">分析船次總數與總時數</span>
+            <div class="kpi-icon-wrapper"><i data-lucide="ship"></i></div>
+          </div>
+          <div class="kpi-value" id="vrKpiTotalVoyages">0 <span style="font-size:1rem;">船次</span></div>
+          <div class="kpi-footer">
+            <span id="vrKpiSubTotalHours">累積作業鐘點數</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Long-Term Voyage Rate Visual Charts Grid -->
+      <section class="charts-grid">
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="line-chart" style="color: var(--accent-cyan);"></i>
+              <div>
+                <div class="chart-title">長期各船次「本船次平均每小時作業速率」趨勢圖</div>
+                <div class="chart-subtitle">依時間順序比較歷史各船次平均每小時裝載噸數 (噸/小時)</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageRateTrend"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <i data-lucide="bar-chart-2" style="color: var(--accent-purple);"></i>
+              <div>
+                <div class="chart-title">各船次平均每小時過磅車數比對</div>
+                <div class="chart-subtitle">比較各船次每小時平均過磅趟數 (車/小時)</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="chartVoyageRateTrips"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Master Table Card: Long-Term Voyage Rate Analysis 工作表 -->
+      <section class="table-card">
+        <div class="table-toolbar">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="table" style="color: var(--accent-cyan);"></i>
+            <h3 style="font-size: 1.1rem; font-weight: 600;">長期各船次 [本船次平均每小時作業速率] 彙總工作表</h3>
+            <span style="font-size: 0.8rem; color: var(--text-dim);" id="vrTableRowCount">(共 0 船次)</span>
+          </div>
+
+          <div class="search-input-wrapper">
+            <i data-lucide="search"></i>
+            <input type="text" id="vrSearchInput" class="search-input" placeholder="搜尋船次名稱、日期...">
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="voyageRateTable">
+            <thead>
+              <tr>
+                <th id="thVrName">船次名稱 / 編號</th>
+                <th id="thVrDates">作業起訖日期</th>
+                <th id="thVrDays">作業天數</th>
+                <th id="thVrHours">實際作業時數 (小時)</th>
+                <th id="thVrTrips">過磅總車次</th>
+                <th id="thVrWeight">總裝載淨重 (噸)</th>
+                <th id="thVrRate" style="color: var(--accent-cyan);">本船次平均每小時作業速率 (噸/小時)</th>
+                <th id="thVrTripsRate">平均每小時過磅車數 (車/小時)</th>
+                <th id="thVrPeak">單小時最高速率 (噸/小時)</th>
+                <th id="thVrGrade">速率評等</th>
+              </tr>
+            </thead>
+            <tbody id="vrTableBody">
+              <tr>
+                <td colspan="10" style="text-align:center; padding: 2rem; color: var(--text-muted);">
+                  選擇船次或載入數據以顯示作業速率分析工作表
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- JavaScript App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "tpg-dashboard",
+  "version": "1.0.0",
+  "description": "台北港轉爐石專案 (617000928) - 過磅數據儀表板",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "publish": "node publish.js",
+    "preview": "npx --yes serve docs -p 8080"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

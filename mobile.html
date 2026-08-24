@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>轉爐石台北港專案 - 手機版數據與船次分析儀表板</title>
+  <meta name="description" content="轉爐石台北港專案過磅數據與船次作業進度手機端分析儀表板。">
+
+  <!-- Third Party CDN Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap">
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --bg-card-hover: rgba(51, 65, 85, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+
+      --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+      --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      --gradient-emerald: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --gradient-amber: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans TC', -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 80px; /* Space for bottom nav */
+    }
+
+    /* Header */
+    .mobile-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--gradient-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .brand-title {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      color: var(--accent-cyan);
+    }
+
+    /* Sync Status Bar */
+    .sync-status-bar {
+      margin: 0.8rem 1rem 0;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .btn-sync-file {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Container */
+    .container {
+      padding: 0.8rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    /* Page View Toggle */
+    .page-view {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .page-view.hidden {
+      display: none !important;
+    }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.85rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card.full-width {
+      grid-column: span 2;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--card-accent, var(--gradient-blue));
+    }
+
+    .kpi-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .kpi-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .kpi-footer {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 0.25rem;
+    }
+
+    /* Chart Cards */
+    .chart-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .chart-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .chart-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .chart-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 250px;
+    }
+
+    /* Select Inputs */
+    .mobile-select {
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-main);
+      border: 1px solid var(--accent-cyan);
+      border-radius: var(--radius-sm);
+      padding: 0.45rem 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      outline: none;
+      width: 100%;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* Table / Card List */
+    .data-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .data-card-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-purple { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    /* Bottom Nav Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0.5rem 0;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.2rem 1rem;
+      transition: color 0.2s ease;
+    }
+
+    .nav-item.active {
+      color: var(--accent-cyan);
+    }
+
+    .nav-item i {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <i data-lucide="smartphone"></i>
+      </div>
+      <div>
+        <div class="brand-title">轉爐石台北港專案</div>
+        <div class="brand-subtitle">電腦同步分析儀表板 (617000928)</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sync Status Bar -->
+  <div class="sync-status-bar">
+    <div class="status-indicator" id="syncStatusIndicator">
+      <span style="color: var(--accent-emerald);">🟢</span>
+      <span id="syncStatusText">讀取電腦同步數據中...</span>
+    </div>
+    <button class="btn-sync-file" id="btnImportSyncJSON">
+      <i data-lucide="upload" style="width: 14px;"></i>
+      <span>載入/同步</span>
+    </button>
+    <input type="file" id="syncFileInput" accept=".json" style="display: none;">
+  </div>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- ================= VIEW 1: OVERVIEW ================= -->
+    <div id="viewOverview" class="page-view">
+      <!-- Executive Mobile KPIs -->
+      <section class="kpi-grid">
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue);">
+          <div class="kpi-title">總載運淨重</div>
+          <div class="kpi-value" id="mKpiTotalWeight">0 <span style="font-size:0.8rem;">噸</span></div>
+          <div class="kpi-footer">專案累積運量</div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-purple);">
+          <div class="kpi-title">總過磅車次</div>
+          <div class="kpi-value" id="mKpiTotalTrips">0 <span style="font-size:0.8rem;">車次</span></div>
+          <div class="kpi-footer">登記過磅筆數</div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-emerald);">
+          <div class="kpi-title">平均單車淨重</div>
+          <div class="kpi-value" id="mKpiAvgWeight">0 <span style="font-size:0.8rem;">噸/車</span></div>
+          <div class="kpi-footer">單趟載運效能</div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-amber);">
+          <div class="kpi-title">活躍車輛數</div>
+          <div class="kpi-value" id="mKpiUniqueTrucks">0 <span style="font-size:0.8rem;">輛</span></div>
+          <div class="kpi-footer">參與運送車輛</div>
+        </div>
+
+        <div class="kpi-card full-width" style="--card-accent: var(--gradient-purple);">
+          <div class="kpi-title">歷年載運過磅總淨重彙總</div>
+          <div id="mKpiYearlyList" style="font-size:0.85rem; display:flex; flex-direction:column; gap:0.3rem; margin-top:0.3rem;">
+            <span style="color:var(--text-muted);">載入中...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Visual Mobile Chart 1: Monthly Trend -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="trending-up" style="color: var(--accent-blue);"></i>
+            <div>
+              <div class="chart-title">過磅載運量趨勢 (噸數)</div>
+              <div class="chart-subtitle">統計各月份過磅淨重</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="mChartTrend"></canvas>
+        </div>
+      </section>
+
+      <!-- Visual Mobile Chart 2: Top Trucks -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="award" style="color: var(--accent-purple);"></i>
+            <div>
+              <div class="chart-title">載運量前 5 大車輛排行榜</div>
+              <div class="chart-subtitle">累積載運噸數最高的車輛</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="mChartTopTrucks"></canvas>
+        </div>
+      </section>
+    </div>
+
+
+    <!-- ================= VIEW 2: VOYAGE ANALYTICS ================= -->
+    <div id="viewVoyage" class="page-view hidden">
+      <!-- Voyage Picker -->
+      <section style="background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.3rem;">
+          <i data-lucide="ship" style="width: 16px;"></i> 選擇裝船作業船次:
+        </div>
+        <select id="mVoyageSelect" class="mobile-select">
+          <option value="">讀取船次中...</option>
+        </select>
+        <div style="display: flex; gap: 0.4rem; margin-top: 0.6rem; flex-wrap: wrap;" id="mVoyageBadges">
+          <span class="badge badge-purple" id="mBadgeDates">2024/03/12 ~ 03/15</span>
+          <span class="badge badge-emerald" id="mBadgeDuration">作業 4 天</span>
+          <span class="badge badge-amber" id="mBadgeTrips">總車次 420 趟</span>
+        </div>
+      </section>
+
+      <!-- Voyage KPIs -->
+      <section class="kpi-grid">
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue);">
+          <div class="kpi-title">本船次累計過磅噸數</div>
+          <div class="kpi-value" id="mVKpiTotalWeight">0 <span style="font-size:0.8rem;">噸</span></div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-emerald);">
+          <div class="kpi-title">最高單日裝載量</div>
+          <div class="kpi-value" id="mVKpiPeakDay">0 <span style="font-size:0.8rem;">噸/日</span></div>
+        </div>
+      </section>
+
+      <!-- Voyage Chart 1: S-Curve -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="line-chart" style="color: var(--accent-cyan);"></i>
+            <div>
+              <div class="chart-title">裝船累計進度 S-曲線</div>
+              <div class="chart-subtitle">開工至完工之累計過磅噸數</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="mChartVoyageSCurve"></canvas>
+        </div>
+      </section>
+
+      <!-- Voyage Chart 2: Hourly Rate by Date -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="trending-up" style="color: var(--accent-cyan);"></i>
+            <div>
+              <div class="chart-title">各日期每小時作業速率</div>
+              <div class="chart-subtitle" id="mVHourlySubtitle">區分不同日期之 00:00~23:00 速率</div>
+            </div>
+          </div>
+          <select id="mVHourlyDateSelect" class="mobile-select" style="width: auto; padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+            <option value="ALL_COMPARE">🌐 各日期對比</option>
+            <option value="TIMELINE">📈 連續時間軸</option>
+            <option value="AVG">📊 船次平均</option>
+          </select>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="mChartVoyageHourlyRate"></canvas>
+        </div>
+      </section>
+
+      <!-- Voyage Chart 3: Daily Tonnage -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="calendar" style="color: var(--accent-emerald);"></i>
+            <div>
+              <div class="chart-title">每日過磅噸數對比</div>
+              <div class="chart-subtitle">船次期間各天裝載總量</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="mChartVoyageDaily"></canvas>
+        </div>
+      </section>
+
+      <!-- Voyage Truck Efficiency List -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="truck" style="color: var(--accent-purple);"></i>
+            <div>
+              <div class="chart-title">車輛作業效率明細</div>
+              <div class="chart-subtitle">本船次參與車輛裝運效能</div>
+            </div>
+          </div>
+        </div>
+        <div class="data-card-list" id="mVoyageTruckList">
+          <div style="text-align:center; padding: 1rem; color: var(--text-muted);">載入中...</div>
+        </div>
+      </section>
+    </div>
+
+
+    <!-- ================= VIEW 3: LONG-TERM VOYAGE RATE ================= -->
+    <div id="viewRate" class="page-view hidden">
+      <!-- Rate KPIs -->
+      <section class="kpi-grid">
+        <div class="kpi-card" style="--card-accent: var(--gradient-blue);">
+          <div class="kpi-title">全專案平均速率</div>
+          <div class="kpi-value" id="mVrKpiAvgRate">0 <span style="font-size:0.8rem;">噸/小時</span></div>
+        </div>
+
+        <div class="kpi-card" style="--card-accent: var(--gradient-amber);">
+          <div class="kpi-title">最高速率船次</div>
+          <div class="kpi-value" id="mVrKpiMaxRate">0 <span style="font-size:0.8rem;">噸/小時</span></div>
+        </div>
+      </section>
+
+      <!-- Rate Chart -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="gauge" style="color: var(--accent-cyan);"></i>
+            <div>
+              <div class="chart-title">歷次船次平均速率趨勢</div>
+              <div class="chart-subtitle">比較各船次每小時裝載產能</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="mChartVoyageRateTrend"></canvas>
+        </div>
+      </section>
+
+      <!-- Voyage Rate List -->
+      <section class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <i data-lucide="list" style="color: var(--accent-purple);"></i>
+            <div>
+              <div class="chart-title">船次速率總覽明細</div>
+              <div class="chart-subtitle">歷史船次過磅數據統計</div>
+            </div>
+          </div>
+        </div>
+        <div class="data-card-list" id="mVoyageRateList">
+          <div style="text-align:center; padding: 1rem; color: var(--text-muted);">載入中...</div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="navOverview" data-target="viewOverview">
+      <i data-lucide="layout-dashboard"></i>
+      <span>專案總覽</span>
+    </div>
+    <div class="nav-item" id="navVoyage" data-target="viewVoyage">
+      <i data-lucide="ship"></i>
+      <span>船次進度</span>
+    </div>
+    <div class="nav-item" id="navRate" data-target="viewRate">
+      <i data-lucide="gauge"></i>
+      <span>速率分析</span>
+    </div>
+  </nav>
+
+  <!-- Application Engine Logic -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+
+      const state = {
+        data: null,
+        selectedVoyageIndex: 0,
+        currentView: 'viewOverview',
+        charts: {}
+      };
+
+      const elements = {
+        syncStatusText: document.getElementById('syncStatusText'),
+        btnImportSyncJSON: document.getElementById('btnImportSyncJSON'),
+        syncFileInput: document.getElementById('syncFileInput'),
+        
+        // Navigation
+        navOverview: document.getElementById('navOverview'),
+        navVoyage: document.getElementById('navVoyage'),
+        navRate: document.getElementById('navRate'),
+        viewOverview: document.getElementById('viewOverview'),
+        viewVoyage: document.getElementById('viewVoyage'),
+        viewRate: document.getElementById('viewRate'),
+
+        // Overview
+        mKpiTotalWeight: document.getElementById('mKpiTotalWeight'),
+        mKpiTotalTrips: document.getElementById('mKpiTotalTrips'),
+        mKpiAvgWeight: document.getElementById('mKpiAvgWeight'),
+        mKpiUniqueTrucks: document.getElementById('mKpiUniqueTrucks'),
+        mKpiYearlyList: document.getElementById('mKpiYearlyList'),
+
+        // Voyage
+        mVoyageSelect: document.getElementById('mVoyageSelect'),
+        mBadgeDates: document.getElementById('mBadgeDates'),
+        mBadgeDuration: document.getElementById('mBadgeDuration'),
+        mBadgeTrips: document.getElementById('mBadgeTrips'),
+        mVKpiTotalWeight: document.getElementById('mVKpiTotalWeight'),
+        mVKpiPeakDay: document.getElementById('mVKpiPeakDay'),
+        mVHourlyDateSelect: document.getElementById('mVHourlyDateSelect'),
+        mVHourlySubtitle: document.getElementById('mVHourlySubtitle'),
+        mVoyageTruckList: document.getElementById('mVoyageTruckList'),
+
+        // Rate
+        mVrKpiAvgRate: document.getElementById('mVrKpiAvgRate'),
+        mVrKpiMaxRate: document.getElementById('mVrKpiMaxRate'),
+        mVoyageRateList: document.getElementById('mVoyageRateList')
+      };
+
+      // Bottom Navigation Handler
+      const navItems = [elements.navOverview, elements.navVoyage, elements.navRate];
+      const views = [elements.viewOverview, elements.viewVoyage, elements.viewRate];
+
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          navItems.forEach(i => i.classList.remove('active'));
+          views.forEach(v => v.classList.add('hidden'));
+
+          item.classList.add('active');
+          const targetId = item.getAttribute('data-target');
+          const targetView = document.getElementById(targetId);
+          if (targetView) targetView.classList.remove('hidden');
+
+          state.currentView = targetId;
+          renderCurrentView();
+        });
+      });
+
+      // File Sync Input Handler
+      elements.btnImportSyncJSON.addEventListener('click', () => elements.syncFileInput.click());
+      elements.syncFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const snapshot = JSON.parse(evt.target.result);
+              localStorage.setItem('tpg_synced_data', JSON.stringify(snapshot));
+              loadSyncedData();
+            } catch (err) {
+              alert('無效的同步數據檔案格式。');
+            }
+          };
+          reader.readAsText(file);
+        }
+      });
+
+      // Voyage Selector Change
+      elements.mVoyageSelect.addEventListener('change', (e) => {
+        state.selectedVoyageIndex = parseInt(e.target.value, 10) || 0;
+        renderVoyageDashboard();
+      });
+
+      // Voyage Hourly Date Selector Change
+      elements.mVHourlyDateSelect.addEventListener('change', () => {
+        if (state.data && state.data.voyages[state.selectedVoyageIndex]) {
+          renderVoyageHourlyRateChart(state.data.voyages[state.selectedVoyageIndex]);
+        }
+      });
+
+      // Load Synced Snapshot from LocalStorage
+      function loadSyncedData() {
+        const raw = localStorage.getItem('tpg_synced_data');
+        if (!raw) {
+          elements.syncStatusText.innerHTML = '<span style="color:var(--accent-amber);">🟡 未找到電腦同步數據，已載入示範分析結果</span>';
+          loadDemoData();
+          return;
+        }
+
+        try {
+          const data = JSON.parse(raw);
+          state.data = data;
+
+          const timeStr = data.timestamp ? new Date(data.timestamp).toLocaleString('zh-TW', { hour12: false }) : '未知';
+          elements.syncStatusText.innerHTML = `<span style="color:var(--accent-emerald);">🟢 電腦同步數據: ${data.recordsCount.toLocaleString()} 筆 (${timeStr})</span>`;
+
+          renderOverview();
+          renderVoyageSelectOptions();
+          renderVoyageDashboard();
+          renderRateDashboard();
+        } catch (err) {
+          console.error('Failed to parse synced data:', err);
+          elements.syncStatusText.textContent = '❌ 解析同步數據失敗';
+        }
+      }
+
+      // Render Current Active View
+      function renderCurrentView() {
+        if (state.currentView === 'viewOverview') {
+          renderOverview();
+        } else if (state.currentView === 'viewVoyage') {
+          renderVoyageDashboard();
+        } else if (state.currentView === 'viewRate') {
+          renderRateDashboard();
+        }
+      }
+
+      // 1. Overview Rendering
+      function renderOverview() {
+        if (!state.data || !state.data.compactRecords) return;
+        const records = state.data.compactRecords;
+
+        let totalTons = 0;
+        const trucks = new Set();
+        const monthlyMap = {};
+        const yearMap = {};
+
+        records.forEach(r => {
+          totalTons += r.n;
+          trucks.add(r.t);
+
+          if (r.d) {
+            const d = new Date(r.d);
+            if (!isNaN(d.getTime())) {
+              const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              monthlyMap[ym] = (monthlyMap[ym] || 0) + r.n;
+
+              const y = d.getFullYear();
+              yearMap[y] = (yearMap[y] || 0) + r.n;
+            }
+          }
+        });
+
+        const avgWeight = records.length > 0 ? (totalTons / records.length).toFixed(2) : '0';
+
+        elements.mKpiTotalWeight.innerHTML = `${Math.round(totalTons).toLocaleString()} <span style="font-size:0.8rem;">噸</span>`;
+        elements.mKpiTotalTrips.innerHTML = `${records.length.toLocaleString()} <span style="font-size:0.8rem;">車次</span>`;
+        elements.mKpiAvgWeight.innerHTML = `${avgWeight} <span style="font-size:0.8rem;">噸/車</span>`;
+        elements.mKpiUniqueTrucks.innerHTML = `${trucks.size} <span style="font-size:0.8rem;">輛</span>`;
+
+        // Yearly list
+        const sortedYears = Object.keys(yearMap).sort((a, b) => b - a);
+        elements.mKpiYearlyList.innerHTML = sortedYears.map(y => `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--accent-rose); font-weight:600;">📅 ${y} 年 (民國 ${y - 1911} 年)</span>
+            <span style="font-weight:700;">${Math.round(yearMap[y]).toLocaleString()} 噸</span>
+          </div>
+        `).join('');
+
+        // Monthly Trend Chart
+        const months = Object.keys(monthlyMap).sort();
+        const monthTons = months.map(m => Math.round(monthlyMap[m]));
+        renderChart('mChartTrend', 'line', {
+          labels: months,
+          datasets: [{
+            label: '載運總淨重 (噸)',
+            data: monthTons,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.15)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3
+          }]
+        });
+
+        // Top 5 Trucks Chart
+        const truckMap = {};
+        records.forEach(r => {
+          truckMap[r.t] = (truckMap[r.t] || 0) + r.n;
+        });
+        const topTrucks = Object.entries(truckMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+        renderChart('mChartTopTrucks', 'bar', {
+          labels: topTrucks.map(t => t[0]),
+          datasets: [{
+            label: '累積噸數',
+            data: topTrucks.map(t => Math.round(t[1])),
+            backgroundColor: '#8b5cf6',
+            borderRadius: 4
+          }]
+        }, { indexAxis: 'y' });
+      }
+
+      // 2. Voyage Options
+      function renderVoyageSelectOptions() {
+        if (!state.data || !state.data.voyages) return;
+        elements.mVoyageSelect.innerHTML = '';
+        state.data.voyages.forEach((v, idx) => {
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.textContent = `🚢 ${v.name} (${v.totalWeightTons.toLocaleString()} 噸)`;
+          elements.mVoyageSelect.appendChild(opt);
+        });
+      }
+
+      // 3. Voyage Dashboard Rendering
+      function renderVoyageDashboard() {
+        if (!state.data || !state.data.voyages || state.data.voyages.length === 0) return;
+        const voyage = state.data.voyages[state.selectedVoyageIndex];
+        if (!voyage) return;
+
+        elements.mBadgeDates.textContent = `${voyage.startDate} ~ ${voyage.endDate}`;
+        elements.mBadgeDuration.textContent = `歷時 ${voyage.durationDays} 天`;
+        elements.mBadgeTrips.textContent = `總車次 ${voyage.totalTrips.toLocaleString()} 趟`;
+
+        elements.mVKpiTotalWeight.innerHTML = `${voyage.totalWeightTons.toLocaleString()} <span style="font-size:0.8rem;">噸</span>`;
+        
+        const sortedDays = Object.entries(voyage.dailyMap || {}).sort((a, b) => b[1] - a[1]);
+        const peakDay = sortedDays[0] || ['無', 0];
+        elements.mVKpiPeakDay.innerHTML = `${Math.round(peakDay[1]).toLocaleString()} <span style="font-size:0.8rem;">噸/日</span>`;
+
+        // Render S-Curve
+        renderVoyageSCurveChart(voyage);
+
+        // Render Hourly Rate Chart by Date
+        renderVoyageHourlyRateChart(voyage);
+
+        // Render Daily Chart
+        renderVoyageDailyChart(voyage);
+
+        // Render Truck Efficiency List
+        renderVoyageTruckList(voyage);
+      }
+
+      function renderVoyageSCurveChart(voyage) {
+        let total = 0;
+        const labels = [];
+        const cumulative = [];
+
+        // Generate mock or parsed timeline points
+        const sortedDates = Object.keys(voyage.dailyMap || {}).sort();
+        sortedDates.forEach(d => {
+          total += voyage.dailyMap[d];
+          labels.push(d.slice(5));
+          cumulative.push(Math.round(total));
+        });
+
+        renderChart('mChartVoyageSCurve', 'line', {
+          labels: labels,
+          datasets: [{
+            label: '累計過磅噸數',
+            data: cumulative,
+            borderColor: '#06b6d4',
+            backgroundColor: 'rgba(6, 182, 212, 0.18)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4
+          }]
+        });
+      }
+
+      function renderVoyageHourlyRateChart(voyage) {
+        const select = elements.mVHourlyDateSelect;
+        const subtitle = elements.mVHourlySubtitle;
+        const dates = Object.keys(voyage.dailyMap || {}).sort();
+
+        if (select) {
+          const curr = select.value || 'ALL_COMPARE';
+          select.innerHTML = `
+            <option value="ALL_COMPARE">🌐 各日期對比</option>
+            <option value="TIMELINE">📈 連續時間軸</option>
+            <option value="AVG">📊 船次平均</option>
+          `;
+          dates.forEach((dStr, idx) => {
+            const opt = document.createElement('option');
+            opt.value = dStr;
+            opt.textContent = `📅 ${dStr.slice(5)} (Day ${idx + 1})`;
+            select.appendChild(opt);
+          });
+          select.value = curr;
+        }
+
+        const mode = select ? select.value : 'ALL_COMPARE';
+        const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+        const colors = ['#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#3b82f6'];
+
+        if (mode === 'ALL_COMPARE') {
+          if (subtitle) subtitle.textContent = `比較 ${dates.length} 個作業日之各鐘點噸數`;
+
+          const datasets = dates.map((dStr, idx) => {
+            const color = colors[idx % colors.length];
+            const data = hours.map((_, h) => {
+              const dhKey = `${dStr} ${String(h).padStart(2, '0')}:00`;
+              return voyage.dateHourMap[dhKey] ? Math.round(voyage.dateHourMap[dhKey].weight) : 0;
+            });
+            return {
+              label: `${dStr.slice(5)}`,
+              data: data,
+              borderColor: color,
+              tension: 0.35,
+              pointRadius: 2,
+              borderWidth: 2
+            };
+          });
+
+          renderChart('mChartVoyageHourlyRate', 'line', { labels: hours, datasets: datasets });
+        } else if (mode === 'TIMELINE') {
+          if (subtitle) subtitle.textContent = `連續時段裝載噸數時序圖`;
+          const dhKeys = Object.keys(voyage.dateHourMap || {}).sort();
+          const labels = dhKeys.map(k => `${k.slice(5, 10)} ${k.slice(11)}`);
+          const weights = dhKeys.map(k => Math.round(voyage.dateHourMap[k].weight));
+
+          renderChart('mChartVoyageHourlyRate', 'line', {
+            labels: labels,
+            datasets: [{ label: '噸數', data: weights, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.15)', fill: true, tension: 0.35 }]
+          });
+        } else if (mode === 'AVG') {
+          if (subtitle) subtitle.textContent = `全期平均噸數`;
+          const activeDaysPerHour = Array(24).fill(0);
+          Object.values(voyage.dateHourMap || {}).forEach(dh => {
+            const h = parseInt(dh.hourStr.split(':')[0], 10);
+            if (!isNaN(h) && h >= 0 && h < 24) activeDaysPerHour[h]++;
+          });
+          const avgTons = voyage.hourlyWeightMap.map((w, h) => parseFloat((w / (activeDaysPerHour[h] || 1)).toFixed(1)));
+
+          renderChart('mChartVoyageHourlyRate', 'line', {
+            labels: hours,
+            datasets: [{ label: '平均噸/小時', data: avgTons, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.18)', fill: true, tension: 0.4 }]
+          });
+        } else {
+          // Specific date
+          const targetDate = mode;
+          if (subtitle) subtitle.textContent = `單日詳細作業: ${targetDate}`;
+          const tons = hours.map((_, h) => {
+            const dhKey = `${targetDate} ${String(h).padStart(2, '0')}:00`;
+            return voyage.dateHourMap[dhKey] ? Math.round(voyage.dateHourMap[dhKey].weight) : 0;
+          });
+
+          renderChart('mChartVoyageHourlyRate', 'line', {
+            labels: hours,
+            datasets: [{ label: `${targetDate.slice(5)} 噸數`, data: tons, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.18)', fill: true, tension: 0.35 }]
+          });
+        }
+      }
+
+      function renderVoyageDailyChart(voyage) {
+        const days = Object.keys(voyage.dailyMap || {}).sort();
+        const weights = days.map(d => Math.round(voyage.dailyMap[d]));
+
+        renderChart('mChartVoyageDaily', 'bar', {
+          labels: days.map(d => d.slice(5)),
+          datasets: [{ label: '過磅噸數', data: weights, backgroundColor: '#10b981', borderRadius: 4 }]
+        });
+      }
+
+      function renderVoyageTruckList(voyage) {
+        if (!elements.mVoyageTruckList || !voyage.truckStatsMap) return;
+        const sorted = Object.entries(voyage.truckStatsMap).sort((a, b) => b[1].weight - a[1].weight);
+
+        elements.mVoyageTruckList.innerHTML = sorted.map(([truck, stat]) => {
+          const avgLoad = (stat.weight / stat.trips).toFixed(1);
+          let badgeClass = stat.trips >= 25 ? 'badge-emerald' : 'badge-purple';
+          return `
+            <div class="data-card-item">
+              <div>
+                <div style="font-weight:700; font-size:0.9rem;">${truck}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                  平均載重: ${avgLoad} 噸/車
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:700; color:var(--accent-cyan); font-size:0.9rem;">${Math.round(stat.weight).toLocaleString()} 噸</div>
+                <span class="badge ${badgeClass}" style="margin-top:2px;">${stat.trips} 趟</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. Rate Dashboard Rendering
+      function renderRateDashboard() {
+        if (!state.data || !state.data.voyages) return;
+        const voyages = state.data.voyages;
+
+        let totalTonsAll = 0;
+        let totalHoursAll = 0;
+        let maxRateVoyage = voyages[0];
+
+        const rateList = voyages.map(v => {
+          const activeHours = Object.keys(v.dateHourMap || {}).length || 1;
+          const rateTons = parseFloat((v.totalWeightTons / activeHours).toFixed(1));
+          totalTonsAll += v.totalWeightTons;
+          totalHoursAll += activeHours;
+
+          if (rateTons > (maxRateVoyage ? (maxRateVoyage.totalWeightTons / (Object.keys(maxRateVoyage.dateHourMap || {}).length || 1)) : 0)) {
+            maxRateVoyage = v;
+          }
+
+          return { name: v.name, startDate: v.startDate, totalWeightTons: v.totalWeightTons, activeHours: activeHours, rateTons: rateTons };
+        });
+
+        const overallAvgRate = totalHoursAll > 0 ? (totalTonsAll / totalHoursAll).toFixed(1) : '0';
+
+        elements.mVrKpiAvgRate.innerHTML = `${overallAvgRate} <span style="font-size:0.8rem;">噸/小時</span>`;
+        const maxRateVal = maxRateVoyage ? (maxRateVoyage.totalWeightTons / (Object.keys(maxRateVoyage.dateHourMap || {}).length || 1)).toFixed(1) : '0';
+        elements.mVrKpiMaxRate.innerHTML = `${maxRateVal} <span style="font-size:0.8rem;">噸/小時</span>`;
+
+        // Rate Trend Chart
+        const sortedChrono = [...rateList].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        renderChart('mChartVoyageRateTrend', 'line', {
+          labels: sortedChrono.map(r => r.name.replace('船次 ', '')),
+          datasets: [{
+            label: '平均作業速率 (噸/小時)',
+            data: sortedChrono.map(r => r.rateTons),
+            borderColor: '#06b6d4',
+            backgroundColor: 'rgba(6,182,212,0.18)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4
+          }]
+        });
+
+        // Voyage Rate List
+        elements.mVoyageRateList.innerHTML = sortedChrono.map(r => `
+          <div class="data-card-item">
+            <div>
+              <div style="font-weight:700; font-size:0.88rem;">${r.name}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">作業 ${r.activeHours} 小時 • 總運量 ${r.totalWeightTons.toLocaleString()} 噸</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="badge badge-emerald" style="font-size:0.8rem;">⚡ ${r.rateTons} 噸/hr</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Helper: Render Chart.js
+      function renderChart(canvasId, type, data, extraOptions = {}) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        if (state.charts[canvasId]) {
+          state.charts[canvasId].destroy();
+        }
+
+        state.charts[canvasId] = new Chart(ctx, {
+          type: type,
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: '#94a3b8', font: { family: 'Outfit, Noto Sans TC', size: 10 } } }
+            },
+            scales: type !== 'doughnut' ? {
+              x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            } : {},
+            ...extraOptions
+          }
+        });
+      }
+
+      // Load Built-in Demo Data for Initial Mobile Experience if no local storage
+      function loadDemoData() {
+        const generateRecords = (yearStr, voyageBatches) => {
+          const records = [];
+          const trucks = ['359-WB', '821-KE', 'KL-9082', '772-TG', 'AA-3091', '552-UQ', '881-ZZ'];
+          let seq = 1;
+          voyageBatches.forEach(batch => {
+            const startDate = new Date(batch.start);
+            for (let day = 0; day < batch.days; day++) {
+              const currentDate = new Date(startDate);
+              currentDate.setDate(startDate.getDate() + day);
+              const dateBaseStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+              const dayTrips = 50;
+              for (let i = 0; i < dayTrips; i++) {
+                const hour = Math.floor(Math.random() * 10) + 7;
+                const minute = Math.floor(Math.random() * 60);
+                const dateStr = `${dateBaseStr} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                const net = parseFloat((21.0 + Math.random() * 5).toFixed(2));
+                records.push({ d: dateStr, n: net, t: trucks[Math.floor(Math.random() * trucks.length)], tk: `TPG-${seq++}` });
+              }
+            }
+          });
+          return records;
+        };
+
+        const compactRecords = generateRecords('113', [
+          { start: '2024-03-12', days: 4 },
+          { start: '2024-02-15', days: 3 }
+        ]);
+
+        // Cluster into mock voyages
+        const voyages = [
+          {
+            name: '第 2 船次 (03/12 ~ 03/15)',
+            index: 2,
+            startDate: '2024-03-12',
+            endDate: '2024-03-15',
+            durationDays: 4,
+            totalWeightTons: 4820,
+            totalTrips: 200,
+            uniqueTrucks: 7,
+            dailyMap: { '2024-03-12': 1100, '2024-03-13': 1350, '2024-03-14': 1420, '2024-03-15': 950 },
+            hourlyWeightMap: [0,0,0,0,0,0,0,320,540,680,620,710,610,500,690,650,660,940,1050,880,670,280,0,0],
+            hourlyMap: [0,0,0,0,0,0,0,14,23,29,26,30,26,21,29,28,28,40,45,37,28,12,0,0],
+            dateHourMap: {
+              '2024-03-12 08:00': { weight: 320, trips: 14, dateStr: '2024-03-12', hourStr: '08:00' },
+              '2024-03-12 09:00': { weight: 540, trips: 23, dateStr: '2024-03-12', hourStr: '09:00' },
+              '2024-03-13 08:00': { weight: 350, trips: 15, dateStr: '2024-03-13', hourStr: '08:00' },
+              '2024-03-13 09:00': { weight: 600, trips: 25, dateStr: '2024-03-13', hourStr: '09:00' },
+              '2024-03-14 10:00': { weight: 680, trips: 29, dateStr: '2024-03-14', hourStr: '10:00' }
+            },
+            truckStatsMap: {
+              '359-WB': { trips: 45, weight: 1080, days: new Set(['2024-03-12', '2024-03-13']) },
+              '821-KE': { trips: 38, weight: 920, days: new Set(['2024-03-12', '2024-03-14']) },
+              'KL-9082': { trips: 35, weight: 840, days: new Set(['2024-03-13', '2024-03-15']) }
+            }
+          }
+        ];
+
+        state.data = { timestamp: new Date().toISOString(), sheetName: '示範過磅數據', recordsCount: compactRecords.length, voyages: voyages, compactRecords: compactRecords };
+        renderOverview();
+        renderVoyageSelectOptions();
+        renderVoyageDashboard();
+        renderRateDashboard();
+      }
+
+      // Initial Launch
+      loadSyncedData();
+    });
+  </script>
+</body>
+</html>
