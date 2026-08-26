@@ -377,7 +377,7 @@ async function main() {
 
     return {
       index: voyageDateGroups.length - idx, // 倒序（最新船次序號最大）
-      name: `第 ${voyageDateGroups.length - idx} 船次`,
+      name: `第 ${idx + 1} 船次`,
       startDate,
       endDate,
       durationDays: dateGroup.length,

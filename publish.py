@@ -355,7 +355,7 @@ def main():
             "hourlyWeight": [round(w, 1) for w in v_h_weight]
         })
 
-    voyages.reverse()  # 最新船次排在最前
+    # 保持時間順序：最早船次為第 1 船次，最新船次為最後一船次
 
     output_payload = {
         "meta": {

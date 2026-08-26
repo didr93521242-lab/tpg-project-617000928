@@ -390,7 +390,7 @@ def generate_dashboard_data(all_records, from_cache=False):
             "hourlyWeight": [round(w, 1) for w in v_h_weight]
         })
 
-    voyages.reverse()
+    # 保持時間順序：最早船次為第 1 船次，最新船次為最後一船次
 
     return {
         "meta": {

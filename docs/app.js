@@ -2405,7 +2405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('[OnlineInject] 開始注入線上資料...');
       const kpi = data.kpi || {};
       const dailyStats = data.dailyStats || {};
-      const voyagesData = data.voyages || [];
+      const voyagesData = (data.voyages || []).slice().sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
       const yearlyStats = data.yearlyStats || {};
 
       // 1. 從 dailyStats 重建合成 rawRecords（只含日期+重量，無識別資訊）
@@ -2426,19 +2426,30 @@ document.addEventListener('DOMContentLoaded', () => {
       state.selectedYear = 'ALL';
 
       // 2. 重建 voyages（保留所有彙總分析欄位，但無原始識別資訊）
-      state.voyages = voyagesData.map(v => {
+      state.voyages = voyagesData.map((v, sortedIndex) => {
+         const displayIndex = sortedIndex + 1;
         // 重建 dateHourMap（只用小時分布，非逐筆）
-        const dateHourMap = {};
-        if (v.dailyMap) {
-          Object.keys(v.dailyMap).forEach(dateStr => {
-            for (let h = 0; h < 24; h++) {
+         const dateHourMap = {};
+         const dailyEntries = Object.entries(v.dailyMap || {});
+         const voyageWeight = Number(v.totalWeightTons) || 1;
+         const voyageTrips = Number(v.totalTrips) || 1;
+         if (dailyEntries.length > 0) {
+           dailyEntries.forEach(([dateStr, dailyStat]) => {
+             const dailyWeightShare = (Number(dailyStat.weightTons) || 0) / voyageWeight;
+             const dailyTripsShare = (Number(dailyStat.trips) || 0) / voyageTrips;
+             for (let h = 0; h < 24; h++) {
               const w = (v.hourlyWeight || [])[h] || 0;
               const t = (v.hourlyTrips || [])[h] || 0;
               if (t > 0 || w > 0) {
                 const hourStr = `${String(h).padStart(2, '0')}:00`;
                 const dhKey = `${dateStr} ${hourStr}`;
                 if (!dateHourMap[dhKey]) {
-                  dateHourMap[dhKey] = { weight: 0, trips: 0, dateStr, hourStr };
+                   dateHourMap[dhKey] = {
+                     weight: w * dailyWeightShare,
+                     trips: t * dailyTripsShare,
+                     dateStr,
+                     hourStr
+                   };
                 }
               }
             }
@@ -2446,8 +2457,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return {
-          name: v.name,
-          index: v.index,
+           name: `第 ${displayIndex} 船次 (${v.startDate.slice(5)} ~ ${v.endDate.slice(5)})`,
+           index: displayIndex,
           startDate: v.startDate,
           endDate: v.endDate,
           durationDays: v.durationDays,
