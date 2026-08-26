@@ -1,6 +1,8 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $css = Get-Content -Raw (Join-Path $projectRoot 'styles.css')
+$indexHtml = Get-Content -Raw (Join-Path $projectRoot 'index.html')
+if ($indexHtml -notmatch 'styles\.css\?v=') { throw 'The main page must version its stylesheet URL to avoid stale mobile CSS.' }
 $mobileBlock = [regex]::Match($css, '(?s)@media\s*\(max-width:\s*600px\)\s*\{.*?\n\}')
 if (-not $mobileBlock.Success) {
     throw 'A dedicated 600px mobile layout block is required.'
