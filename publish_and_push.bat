@@ -1,7 +1,9 @@
 @echo off
+cd /d "%~dp0"
 chcp 65001 >nul
+
 echo ======================================================================
-echo   台北港專案 · 一鍵更新與同步至外部網站 (GitHub Pages)
+echo   Taipei Port Project - Auto Publish and Push
 echo ======================================================================
 echo.
 
@@ -15,29 +17,33 @@ if not exist "%GIT_EXE%" (
     set "GIT_EXE=git"
 )
 
-echo [1/3] 正在讀取本機 Excel 並產生匿名彙總數據...
-"%PYTHON_EXE%" "publish.py"
+echo [1/3] 正在自 API 擷取最新作業資料（失敗時自動退回本機 Excel 模式）...
+"%PYTHON_EXE%" sync_api.py
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo ❌ 數據處理失敗，請檢查資料夾或檔案格式！
-    pause
-    exit /b 1
+    echo [警告] API 連線失敗，嘗試使用本機 Excel 檔案備援...
+    "%PYTHON_EXE%" publish.py
+    if %ERRORLEVEL% neq 0 (
+        echo.
+        echo [ERROR] 資料同步失敗，請檢查 API 伺服器或本機檔案。
+        pause
+        exit /b 1
+    )
 )
 
 echo.
-echo [2/3] 正在加入最新數據至 Git 暫存區...
+echo [2/3] Adding files to Git staging...
 "%GIT_EXE%" add docs/data/project-data.json docs/
 
 echo.
-echo [3/3] 正在提交並推送更新至 GitHub Pages...
-set "NOW=%date% %time%"
-"%GIT_EXE%" commit -m "Update: %NOW% 同步最新台北港過磅統計數據"
-"%GIT_EXE%" push origin main
+echo [3/3] Committing and pushing to GitHub...
+"%GIT_EXE%" commit -m "Update: Sync latest Taipei Port weighing data"
+"%GIT_EXE%" push -u origin main
 
 echo.
 echo ======================================================================
-echo   🎉 同步完成！外部訪客將在 1 分鐘內看到最新作業情形。
-echo   🌐 外部查詢網址: https://didr93521242-lab.github.io/tpg-project-617000928/
+echo   Done! Your data has been published.
+echo   URL: https://didr93521242-lab.github.io/tpg-project-617000928/
 echo ======================================================================
 echo.
 pause

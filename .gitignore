@@ -2,6 +2,8 @@
 .vscode/
 .gemini/
 .agents/
+.cache/
+__pycache__/
 node_modules/
 *.log
 ~$*.xlsx

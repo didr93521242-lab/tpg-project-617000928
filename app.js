@@ -26,18 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
     charts: {},
     isDarkMode: true,
     columnMap: {
-      // 日期欄位別名（按優先順序）—若你的 Excel 欄位名稱不在此列，請加入
-      date: ['過磅日期', '日期', '出場日期', '進場日期', '作業日期', '稱重日期', '出廠日期',
+      // 日期欄位別名（按優先順序）—若你的 Excel 或 API 欄位名稱不在此列，請加入
+      date: ['日期A', '過磅日期', '日期', '出場日期', '進場日期', '作業日期', '稱重日期', '出廠日期',
              '報表日期', '計量日期', '時間', '日期時間', 'Date', 'date', 'DateTime'],
       truck: ['車號', '車牌', '車牌號碼', '車輛號碼', '車輛', '拖車號', '拖板車號', 'Truck', 'truck'],
-      netWeight: ['淨重', '淨重(kg)', '淨重(KG)', '淨重(噸)', '淨重(公噸)', '凈重',
-                  '出貨量A', '出貨量', '出貨量(噸)', '出貨量(kg)',
+      netWeight: ['出貨量A', '淨重', '淨重(kg)', '淨重(KG)', '淨重(噸)', '淨重(公噸)', '凈重',
+                  '出貨量', '出貨量(噸)', '出貨量(kg)',
                   '裝船量', '裝船淨重', '卡數量', '數量',
                   'NetWeight', '實重', '重量'],
       grossWeight: ['毛重', '毛重(kg)', '毛重(KG)', '毛重(噸)', 'GrossWeight'],
       tareWeight: ['空重', '皮重', '空重(kg)', '空重(KG)', '空重(噸)', 'TareWeight'],
-      ticketNo: ['過磅單號', '磅單號', '單號', '序號', '編號', 'TicketNo', 'No'],
-      customer: ['客戶名稱', '客戶', '廠商', '運送單位', '進貨單位', '收貨單位'],
+      ticketNo: ['出廠單號', '過磅單號', '磅單號', '單號', '序號', '編號', 'TicketNo', 'No'],
+      customer: ['客戶名稱', '客戶', '廠商', '運送單位', '進貨單位', '收貨單位', '交貨廠', '交貨別', '出貨廠'],
       time: ['出廠時間A', '出廠時間', '出場時間A', '出場時間', '進場時間', '過磅時間', '時間', 'Time', 'time', 'TimeString']
     }
   };
@@ -46,6 +46,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const elements = {
     loadingOverlay: document.getElementById('loadingOverlay'),
     loadingText: document.getElementById('loadingText'),
+    btnApiSync: document.getElementById('btnApiSync'),
+    btnApiConfig: document.getElementById('btnApiConfig'),
+    apiConfigModal: document.getElementById('apiConfigModal'),
+    btnCloseApiModal: document.getElementById('btnCloseApiModal'),
+    apiUrlInput: document.getElementById('apiUrlInput'),
+    apiKeyInput: document.getElementById('apiKeyInput'),
+    apiCacheTtlSelect: document.getElementById('apiCacheTtlSelect'),
+    cacheStatusText: document.getElementById('cacheStatusText'),
+    btnClearApiCache: document.getElementById('btnClearApiCache'),
+    btnForceRefreshApi: document.getElementById('btnForceRefreshApi'),
+    btnResetApiUrl: document.getElementById('btnResetApiUrl'),
+    btnSaveAndFetchApi: document.getElementById('btnSaveAndFetchApi'),
     btnSyncFixedFolder: document.getElementById('btnSyncFixedFolder'),
     btnPickFolder: document.getElementById('btnPickFolder'),
     btnPickFiles: document.getElementById('btnPickFiles'),
@@ -300,6 +312,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Event Listeners Setup ---
   function setupEvents() {
+    // 0. API Sync & Config Modal
+    elements.btnApiSync?.addEventListener('click', () => {
+      fetchAndLoadApiData(getSavedApiUrl(), getSavedApiKey(), { force: false });
+    });
+
+    elements.btnApiConfig?.addEventListener('click', async () => {
+      if (elements.apiUrlInput) elements.apiUrlInput.value = getSavedApiUrl();
+      if (elements.apiKeyInput) elements.apiKeyInput.value = getSavedApiKey();
+      if (elements.apiCacheTtlSelect) elements.apiCacheTtlSelect.value = getSavedCacheTtl();
+      await updateCacheStatusUI();
+      if (elements.apiConfigModal) elements.apiConfigModal.style.display = 'flex';
+    });
+
+    elements.btnCloseApiModal?.addEventListener('click', () => {
+      if (elements.apiConfigModal) elements.apiConfigModal.style.display = 'none';
+    });
+
+    elements.apiConfigModal?.addEventListener('click', (e) => {
+      if (e.target === elements.apiConfigModal) {
+        elements.apiConfigModal.style.display = 'none';
+      }
+    });
+
+    elements.btnResetApiUrl?.addEventListener('click', () => {
+      if (elements.apiUrlInput) elements.apiUrlInput.value = DEFAULT_API_URL;
+      if (elements.apiKeyInput) elements.apiKeyInput.value = DEFAULT_API_KEY;
+      if (elements.apiCacheTtlSelect) elements.apiCacheTtlSelect.value = '1800000';
+    });
+
+    elements.btnClearApiCache?.addEventListener('click', async () => {
+      await clearApiCache();
+      await updateCacheStatusUI();
+      alert('✅ 本地 IndexedDB 數據快取已成功清除！');
+    });
+
+    elements.btnForceRefreshApi?.addEventListener('click', () => {
+      const url = elements.apiUrlInput?.value.trim() || DEFAULT_API_URL;
+      const key = elements.apiKeyInput?.value.trim() || DEFAULT_API_KEY;
+      const ttl = elements.apiCacheTtlSelect?.value || '1800000';
+      localStorage.setItem('TPG_API_URL', url);
+      localStorage.setItem('TPG_API_KEY', key);
+      localStorage.setItem('TPG_CACHE_TTL', ttl);
+      if (elements.apiConfigModal) elements.apiConfigModal.style.display = 'none';
+      fetchAndLoadApiData(url, key, { force: true });
+    });
+
+    elements.btnSaveAndFetchApi?.addEventListener('click', () => {
+      const url = elements.apiUrlInput?.value.trim() || DEFAULT_API_URL;
+      const key = elements.apiKeyInput?.value.trim() || DEFAULT_API_KEY;
+      const ttl = elements.apiCacheTtlSelect?.value || '1800000';
+      localStorage.setItem('TPG_API_URL', url);
+      localStorage.setItem('TPG_API_KEY', key);
+      localStorage.setItem('TPG_CACHE_TTL', ttl);
+      if (elements.apiConfigModal) elements.apiConfigModal.style.display = 'none';
+      fetchAndLoadApiData(url, key, { force: false });
+    });
+
     // 1. Sync & Folder Pickers
     elements.btnSyncFixedFolder?.addEventListener('click', syncOrPickFixedFolder);
     elements.btnPickFolder?.addEventListener('click', syncOrPickFixedFolder);
@@ -2051,7 +2120,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const currentDate = new Date(startDate);
           currentDate.setDate(startDate.getDate() + day);
           const dateBaseStr = `${currentDate.getFullYear()}/${String(currentDate.getMonth() + 1).padStart(2, '0')}/${String(currentDate.getDate()).padStart(2, '0')}`;
-          
+
           const dayTrips = 80 + Math.floor(Math.random() * 40);
           for (let i = 0; i < dayTrips; i++) {
             const hour = Math.floor(Math.random() * 10) + 7;
@@ -2085,7 +2154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { start: '2024-02-15', days: 3 },
         { start: '2024-01-10', days: 4 }
       ]);
-      
+
       const demo109_112 = generateRecords('112', [
         { start: '2023-11-05', days: 4 },
         { start: '2023-09-18', days: 3 },
@@ -2104,6 +2173,221 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSheetTabs();
       loadSheet(MERGED_TAB_NAME);
     }, 300);
+  }
+
+  // --- API Fetching & IndexedDB Caching Engine ---
+  const DEFAULT_API_URL = 'http://192.168.2.7:8000/api/test/v1/tpdashboard';
+  const DEFAULT_API_KEY = '';
+  const CACHE_DB_NAME = 'TPG_API_CACHE_DB';
+  const CACHE_STORE_NAME = 'api_cache_store';
+  const CACHE_KEY = 'tpdashboard_raw_cache_v2';
+
+  function getSavedApiUrl() {
+    return localStorage.getItem('TPG_API_URL') || DEFAULT_API_URL;
+  }
+
+  function getSavedApiKey() {
+    return localStorage.getItem('TPG_API_KEY') || DEFAULT_API_KEY;
+  }
+
+  function getSavedCacheTtl() {
+    return localStorage.getItem('TPG_CACHE_TTL') || '1800000'; // 預設 30 分鐘
+  }
+
+  // --- IndexedDB Cache Storage Engine ---
+  function openCacheDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(CACHE_DB_NAME, 1);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(CACHE_STORE_NAME)) {
+          db.createObjectStore(CACHE_STORE_NAME);
+        }
+      };
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function getApiCache(key = CACHE_KEY) {
+    try {
+      const db = await openCacheDB();
+      const tx = db.transaction(CACHE_STORE_NAME, 'readonly');
+      const store = tx.objectStore(CACHE_STORE_NAME);
+      const request = store.get(key);
+      return new Promise((resolve) => {
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => resolve(null);
+      });
+    } catch (err) {
+      console.warn('[CacheDB] getApiCache error:', err);
+      return null;
+    }
+  }
+
+  async function setApiCache(key = CACHE_KEY, data, meta = {}) {
+    try {
+      const db = await openCacheDB();
+      const tx = db.transaction(CACHE_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(CACHE_STORE_NAME);
+      const cacheObj = {
+        data: data,
+        count: data.length,
+        timestamp: Date.now(),
+        savedAt: new Date().toLocaleString(),
+        ...meta
+      };
+      store.put(cacheObj, key);
+      return new Promise((resolve) => tx.oncomplete = resolve);
+    } catch (err) {
+      console.warn('[CacheDB] setApiCache error:', err);
+    }
+  }
+
+  async function clearApiCache(key = CACHE_KEY) {
+    try {
+      const db = await openCacheDB();
+      const tx = db.transaction(CACHE_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(CACHE_STORE_NAME);
+      store.delete(key);
+      return new Promise((resolve) => tx.oncomplete = resolve);
+    } catch (err) {
+      console.warn('[CacheDB] clearApiCache error:', err);
+    }
+  }
+
+  async function updateCacheStatusUI() {
+    if (!elements.cacheStatusText) return;
+    const cache = await getApiCache();
+    if (!cache || !cache.data) {
+      elements.cacheStatusText.textContent = '無本地快取 (尚未載入)';
+      elements.cacheStatusText.style.color = 'var(--text-muted)';
+      elements.cacheStatusText.style.background = 'rgba(255,255,255,0.04)';
+      elements.cacheStatusText.style.borderColor = 'var(--border)';
+    } else {
+      const ageMinutes = Math.round((Date.now() - cache.timestamp) / 60000);
+      elements.cacheStatusText.innerHTML = `⚡ 已快取 <strong>${cache.count?.toLocaleString() || 0}</strong> 筆<br><span style="font-size:0.75rem;opacity:0.85;">(${ageMinutes} 分鐘前建立 · ${cache.savedAt || ''})</span>`;
+      elements.cacheStatusText.style.color = '#10b981';
+      elements.cacheStatusText.style.background = 'rgba(16,185,129,0.1)';
+      elements.cacheStatusText.style.borderColor = 'rgba(16,185,129,0.3)';
+    }
+  }
+
+  async function fetchAndLoadApiData(url, apiKey, options = {}) {
+    const forceRefresh = options.force === true;
+    const cacheTtlMs = parseInt(getSavedCacheTtl(), 10);
+    const startTime = performance.now();
+
+    // 1. 檢查 IndexedDB 快取
+    if (!forceRefresh && cacheTtlMs !== 0) {
+      const cached = await getApiCache();
+      if (cached && cached.data && Array.isArray(cached.data) && cached.data.length > 0) {
+        const cacheAge = Date.now() - cached.timestamp;
+        const isNotExpired = (cacheTtlMs === -1) || (cacheAge < cacheTtlMs);
+
+        if (isNotExpired) {
+          const loadSec = ((performance.now() - startTime) / 1000).toFixed(2);
+          console.log(`[API Cache] ⚡ 命中本地 IndexedDB 快取: ${cached.count.toLocaleString()} 筆 (載入耗時: ${loadSec} 秒)`);
+
+          showLoading('正在自本地 IndexedDB 快取載入數據...');
+          state.rawRecords = cached.data;
+          state.filteredRecords = [...cached.data];
+          state.sheetNames = ['⚡ 本地快取數據 (154,590+筆)'];
+          state.currentSheet = '⚡ 本地快取數據 (154,590+筆)';
+          state.currentPage = 1;
+
+          const pathBannerText = document.getElementById('pathBannerText');
+          if (pathBannerText) {
+            pathBannerText.innerHTML = `⚡ <strong>本地快取載入:</strong> ${cached.count.toLocaleString()} 筆作業資料 (快取時間: ${cached.savedAt} · 耗時 ${loadSec}s)`;
+          }
+
+          renderSheetTabs();
+          renderYearSelectOptions();
+          filterRecords();
+          clusterVoyages();
+          switchView(state.currentView || 'overview');
+          hideLoading();
+          return;
+        }
+      }
+    }
+
+    // 2. 向 API 發出請求
+    showLoading('正在自 API 連線下載台北港作業數據 (192.168.2.7:8000)...');
+    try {
+      console.log('[fetchAndLoadApiData] Fetching from API with X-API-Key:', url);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'X-API-Key': apiKey || DEFAULT_API_KEY
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      showLoading('數據下載完成，正在解析並寫入本地快取...');
+      const responseData = await res.json();
+      const rawRecords = Array.isArray(responseData) ? responseData : (responseData.data || []);
+
+      if (!rawRecords || rawRecords.length === 0) {
+        throw new Error('API 回傳的資料內容為空');
+      }
+
+      const elapsedSec = ((performance.now() - startTime) / 1000).toFixed(1);
+      console.log(`[fetchAndLoadApiData] 成功下載 ${rawRecords.length.toLocaleString()} 筆記錄 (耗時 ${elapsedSec} 秒)`);
+
+      // 儲存至 IndexedDB 快取
+      if (cacheTtlMs !== 0) {
+        await setApiCache(CACHE_KEY, rawRecords, { url, apiKey: apiKey ? `${apiKey.slice(0, 6)}...` : '' });
+        console.log('[fetchAndLoadApiData] 💾 數據已存入 IndexedDB 快取');
+      }
+
+      // 載入至 state
+      state.rawRecords = rawRecords;
+      state.filteredRecords = [...rawRecords];
+      state.sheetNames = ['📡 API 即時連線數據 (全量)'];
+      state.currentSheet = '📡 API 即時連線數據 (全量)';
+      state.currentPage = 1;
+
+      // 更新路徑指示條
+      const pathBannerText = document.getElementById('pathBannerText');
+      if (pathBannerText) {
+        pathBannerText.innerHTML = `📡 <strong>API 即時連線:</strong> 192.168.2.7 (${rawRecords.length.toLocaleString()} 筆作業資料 · 耗時 ${elapsedSec}s)`;
+      }
+
+      renderSheetTabs();
+      renderYearSelectOptions();
+      filterRecords();
+      clusterVoyages();
+      switchView(state.currentView || 'overview');
+
+      console.log('[fetchAndLoadApiData] ✅ 儀表板圖表與船次運算完成');
+    } catch (err) {
+      console.error('[fetchAndLoadApiData] 連線失敗:', err);
+
+      // 連線失敗時嘗試降級讀取任何現存本地快取
+      const fallbackCache = await getApiCache();
+      if (fallbackCache && fallbackCache.data && fallbackCache.data.length > 0) {
+        alert(`⚠️ API 即時連線失敗 (${err.message})。\n\n系統已自動降級使用現存的本地快取資料 (${fallbackCache.data.length.toLocaleString()} 筆 · ${fallbackCache.savedAt})。`);
+        state.rawRecords = fallbackCache.data;
+        state.filteredRecords = [...fallbackCache.data];
+        state.sheetNames = ['⚡ 離線快取數據 (備援)'];
+        state.currentSheet = '⚡ 離線快取數據 (備援)';
+        state.currentPage = 1;
+        renderSheetTabs();
+        renderYearSelectOptions();
+        filterRecords();
+        clusterVoyages();
+        switchView(state.currentView || 'overview');
+      } else {
+        alert(`⚠️ API 即時連線失敗：\n${err.message}\n\n可能原因：\n1. 目前裝置未處於公司內部區域網路 (192.168.2.x)。\n2. 瀏覽器跨來源資源共享 (CORS) 限制。\n\n建議解法：\n• 確認已連線至公司內網或 VPN。\n• 或執行本機 publish_api.bat 批次檔產出靜態資料。`);
+      }
+    } finally {
+      hideLoading();
+    }
   }
 
   // --- Initialization ---

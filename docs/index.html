@@ -56,10 +56,20 @@
     </div>
 
     <div class="nav-actions">
+      <!-- API Live Sync Button -->
+      <button class="btn btn-primary" id="btnApiSync" title="自台北港 API (192.168.2.7) 即時同步最新作業數據">
+        <i data-lucide="cloud-lightning"></i>
+        <span>API 即時同步</span>
+      </button>
+
+      <button class="btn btn-secondary" id="btnApiConfig" title="設定 API 連結與 Token" style="padding: 0.5rem 0.65rem;">
+        <i data-lucide="settings-2"></i>
+      </button>
+
       <!-- Sync / Pick Buttons -->
-      <button class="btn btn-primary" id="btnSyncFixedFolder" title="一鍵同步與更新固定資料夾數據 (H:\我的雲端硬碟\APPsheet\data\轉爐石台北港專案-617000928)">
+      <button class="btn btn-secondary" id="btnSyncFixedFolder" title="一鍵同步與更新固定資料夾數據 (H:\我的雲端硬碟\APPsheet\data\轉爐石台北港專案-617000928)">
         <i data-lucide="refresh-cw"></i>
-        <span>同步資料夾數據</span>
+        <span>同步資料夾</span>
       </button>
 
       <button class="btn btn-secondary" id="btnPickFolder">
@@ -684,6 +694,73 @@
     </div>
 
   </main>
+
+  <!-- API Configuration Modal -->
+  <div id="apiConfigModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <i data-lucide="cloud-lightning" style="color:var(--accent-cyan);"></i>
+          <h3 style="margin:0; font-size:1.15rem; font-weight:700;">台北港 API 連線與快取設定</h3>
+        </div>
+        <button class="btn-close" id="btnCloseApiModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-muted);">API 串接端點 (URL)</label>
+          <input type="text" id="apiUrlInput" class="form-input" style="width:100%; box-sizing:border-box; font-family:monospace; font-size:0.82rem; padding:0.65rem 0.8rem; border-radius:6px; border:1px solid var(--border); background:var(--bg-card);" value="http://192.168.2.7:8000/api/test/v1/tpdashboard">
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-muted);">X-API-Key 授權金鑰</label>
+          <input type="password" id="apiKeyInput" class="form-input" style="width:100%; box-sizing:border-box; font-family:monospace; font-size:0.82rem; padding:0.65rem 0.8rem; border-radius:6px; border:1px solid var(--border); background:var(--bg-card);" value="" autocomplete="off">
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1.2rem;">
+          <div>
+            <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-muted);">本地 IndexedDB 快取效期</label>
+            <select id="apiCacheTtlSelect" class="form-input" style="width:100%; box-sizing:border-box; font-size:0.85rem; padding:0.6rem 0.8rem; border-radius:6px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-main);">
+              <option value="1800000" selected>30 分鐘 (建議，兼顧即時與速度)</option>
+              <option value="3600000">1 小時</option>
+              <option value="21600000">6 小時</option>
+              <option value="86400000">24 小時</option>
+              <option value="-1">永久快取 (僅手動強制更新)</option>
+              <option value="0">關閉快取 (每次均自 API 下載 40MB)</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-muted);">目前快取狀態</label>
+            <div id="cacheStatusText" style="font-size:0.82rem; color:var(--accent-cyan); padding:0.65rem 0.8rem; background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.25); border-radius:6px;">
+              偵測中...
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.6; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem;">
+          <strong style="color:var(--accent-cyan);">⚡ 巨量資料加速機制：</strong>API 含有 154,590+ 筆歷史出廠資料（約 39MB）。系統透過瀏覽器 <strong>IndexedDB 本地儲存與記憶體預分群</strong> 技術，首次下載後二次查詢可於 <strong>0.2 秒內秒開</strong>，大幅節省內網頻寬並避免重複等待。
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem;">
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-secondary" id="btnClearApiCache" title="清空瀏覽器 IndexedDB 儲存的 15 萬筆數據快取">
+            <i data-lucide="trash-2"></i>
+            <span>清除快取</span>
+          </button>
+          <button class="btn btn-secondary" id="btnResetApiUrl">恢復預設</button>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-secondary" id="btnForceRefreshApi" title="繞過本地快取，立即向 API 重新下載完整數據">
+            <i data-lucide="refresh-cw"></i>
+            <span>強制刷新 API</span>
+          </button>
+          <button class="btn btn-primary" id="btnSaveAndFetchApi">
+            <i data-lucide="play"></i>
+            <span>儲存並載入</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- JavaScript App Logic -->
   <script src="app.js"></script>
