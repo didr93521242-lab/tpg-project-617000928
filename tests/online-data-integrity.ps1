@@ -10,10 +10,10 @@ if ($app -notmatch 'data\.voyages\s*\|\|\s*\[\]\)\.slice\(\)\.sort') {
 if ($app -notmatch '第 \$\{displayIndex\} 船次') {
     throw 'Online injection must renumber voyages after sorting.'
 }
-if ($app -notmatch 'weight:\s*w\s*\*\s*dailyWeightShare') {
+if ($app -notmatch 'const dateHourMap = v\.dateHourMap \|\| \{\}') {
     throw 'Online injection must populate dateHourMap weights.'
 }
-if ($app -notmatch 'trips:\s*t\s*\*\s*dailyTripsShare') {
+if ($app -match 'dailyWeightShare|dailyTripsShare') {
     throw 'Online injection must populate dateHourMap trips.'
 }
 

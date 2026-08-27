@@ -361,9 +361,14 @@ async function main() {
     // 小時分布
     const vHourlyTrips = Array(24).fill(0);
     const vHourlyWeight = Array(24).fill(0);
+    const vDateHourMap = {};
     voyageRecs.forEach(r => {
       vHourlyTrips[r.hour]++;
       vHourlyWeight[r.hour] += r.netWeightTons;
+      const key = `${r.dateStr} ${String(r.hour).padStart(2, '0')}:00`;
+      if (!vDateHourMap[key]) vDateHourMap[key] = { weight: 0, trips: 0, dateStr: r.dateStr, hourStr: `${String(r.hour).padStart(2, '0')}:00` };
+      vDateHourMap[key].weight += r.netWeightTons;
+      vDateHourMap[key].trips++;
     });
 
     // 計算速率
@@ -376,7 +381,7 @@ async function main() {
     ).length || 1;
 
     return {
-      index: voyageDateGroups.length - idx, // 倒序（最新船次序號最大）
+      index: idx + 1,
       name: `第 ${idx + 1} 船次`,
       startDate,
       endDate,
@@ -388,9 +393,10 @@ async function main() {
       activeHours,
       dailyMap: vDailyMap,
       hourlyTrips: vHourlyTrips,
-      hourlyWeight: vHourlyWeight.map(w => Math.round(w * 10) / 10)
+      hourlyWeight: vHourlyWeight.map(w => Math.round(w * 10) / 10),
+      dateHourMap: vDateHourMap
     };
-  }).reverse(); // 最新船次排前面
+  });
 
   // 5. 組裝輸出 JSON
   const outputData = {

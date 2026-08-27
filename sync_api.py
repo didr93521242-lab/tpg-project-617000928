@@ -345,7 +345,7 @@ def generate_dashboard_data(all_records, from_cache=False):
     voyages = []
     total_v = len(voyage_date_groups)
     for idx, date_group in enumerate(voyage_date_groups):
-        v_idx = total_v - idx
+        v_idx = idx + 1
         v_date_set = set(date_group)
         v_recs = [r for r in all_records if r["date"] in v_date_set]
         v_weight = round(sum(r["net_weight_tons"] for r in v_recs))
@@ -365,10 +365,16 @@ def generate_dashboard_data(all_records, from_cache=False):
 
         v_h_trips = [0] * 24
         v_h_weight = [0.0] * 24
+        v_date_hour = {}
         for r in v_recs:
             h = r["hour"]
             v_h_trips[h] += 1
             v_h_weight[h] += r["net_weight_tons"]
+            key = f"{r['date_str']} {h:02d}:00"
+            if key not in v_date_hour:
+                v_date_hour[key] = {"weight": 0.0, "trips": 0, "dateStr": r["date_str"], "hourStr": f"{h:02d}:00"}
+            v_date_hour[key]["weight"] += r["net_weight_tons"]
+            v_date_hour[key]["trips"] += 1
 
         active_work_hours = len(set(f"{r['date_str']} {r['hour']}" for r in v_recs)) or 1
         avg_rate_tons = round(v_weight / active_work_hours, 1)
@@ -388,6 +394,7 @@ def generate_dashboard_data(all_records, from_cache=False):
             "dailyMap": v_daily,
             "hourlyTrips": v_h_trips,
             "hourlyWeight": [round(w, 1) for w in v_h_weight]
+            ,"dateHourMap": v_date_hour
         })
 
     # 保持時間順序：最早船次為第 1 船次，最新船次為最後一船次
