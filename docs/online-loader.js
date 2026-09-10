@@ -31,11 +31,16 @@
   document.addEventListener('DOMContentLoaded', function () {
 
     // 1. 隱藏本機操作按鈕
-    const hideIds = ['btnSyncFixedFolder', 'btnPickFolder', 'btnPickFiles', 'pathBanner'];
+    // 公開頁面無法連線至公司內網 API（192.168.2.x），因此隱藏所有
+    // 需要本機/內網權限的操作，避免使用者誤以為手機可直接同步。
+    const hideIds = ['btnSyncFixedFolder', 'btnPickFolder', 'btnPickFiles', 'pathBanner', 'btnApiSync'];
     hideIds.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
+
+    const apiConfig = document.getElementById('apiConfigModal');
+    if (apiConfig) apiConfig.style.display = 'none';
 
     // 2. 替換 "示範數據" 按鈕文字為 "重新整理"
     const btnDemo = document.getElementById('btnLoadDemo');
@@ -95,6 +100,9 @@
         if (badge) badge.title = `資料更新時間: ${formatted}`;
         showUpdateToast(formatted);
       }
+
+      // 記錄本次成功載入時間，供手機重新整理時排查快取問題。
+      window.__TPG_ONLINE_DATA_META = data.meta || {};
 
     } catch (err) {
       console.error('[OnlineLoader] 載入失敗:', err);
