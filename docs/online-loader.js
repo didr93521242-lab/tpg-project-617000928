@@ -17,11 +17,8 @@
   'use strict';
 
   // ── 環境偵測 ──────────────────────────────────────
-  const IS_ONLINE = (
-    window.location.hostname !== 'localhost' &&
-    window.location.hostname !== '127.0.0.1' &&
-    window.location.protocol !== 'file:'
-  );
+  // 僅 GitHub Pages 視為公開模式；公司網域/內網頁面仍需保留 API 同步功能。
+  const IS_ONLINE = /(^|\.)github\.io$/i.test(window.location.hostname);
 
   if (!IS_ONLINE) return; // 本機開啟時，全部交給 app.js 原始邏輯
 
@@ -33,14 +30,11 @@
     // 1. 隱藏本機操作按鈕
     // 公開頁面無法連線至公司內網 API（192.168.2.x），因此隱藏所有
     // 需要本機/內網權限的操作，避免使用者誤以為手機可直接同步。
-    const hideIds = ['btnSyncFixedFolder', 'btnPickFolder', 'btnPickFiles', 'pathBanner', 'btnApiSync'];
+    const hideIds = ['btnSyncFixedFolder', 'btnPickFolder', 'btnPickFiles', 'pathBanner'];
     hideIds.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
-
-    const apiConfig = document.getElementById('apiConfigModal');
-    if (apiConfig) apiConfig.style.display = 'none';
 
     // 2. 替換 "示範數據" 按鈕文字為 "重新整理"
     const btnDemo = document.getElementById('btnLoadDemo');
