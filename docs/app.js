@@ -314,6 +314,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupEvents() {
     // 0. API Sync & Config Modal
     elements.btnApiSync?.addEventListener('click', () => {
+      const isPublicPage = window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1' &&
+        window.location.protocol !== 'file:';
+      if (isPublicPage) {
+        alert('公開網頁無法直接連線公司內網 API。請在公司內網電腦執行 publish_api.bat 後，再重新整理本頁。');
+        return;
+      }
       fetchAndLoadApiData(getSavedApiUrl(), getSavedApiKey(), { force: false });
     });
 
