@@ -31,6 +31,10 @@ DEFAULT_API_KEY = ""
 CACHE_DIR = Path(__file__).resolve().parent / ".cache"
 CACHE_FILE = CACHE_DIR / "api_raw_cache.json"
 CACHE_TTL_SECONDS = 1800  # 本機快取有效期：30 分鐘
+VOYAGE_CAPACITY_TONS = 34000
+VOYAGE_SPLIT_MIN_TONS = 33900
+VOYAGE_SMALL_FRAGMENT_TONS = 150
+VOYAGE_IDLE_GAP_HOURS = 1
 
 DOCS_DATA_DIR = Path(__file__).resolve().parent / "docs" / "data"
 OUTPUT_FILE = DOCS_DATA_DIR / "project-data.json"
@@ -343,7 +347,7 @@ def generate_dashboard_data(all_records, from_cache=False):
         bucket_weight = sum(r["net_weight_tons"] for r in bucket_records)
         gap_hours = ((bucket_dt - previous_dt).total_seconds() / 3600) if previous_dt else 0
         if current and ((bucket_dt.date() - previous_dt.date()).days > 4 or
-                        (gap_hours >= 1 and current_weight >= 33900)):
+                        (gap_hours >= VOYAGE_IDLE_GAP_HOURS and current_weight >= VOYAGE_SPLIT_MIN_TONS)):
             voyage_groups.append(current)
             current = []
             current_weight = 0.0
@@ -358,7 +362,7 @@ def generate_dashboard_data(all_records, from_cache=False):
     merged_groups = []
     for group in voyage_groups:
         group_weight = sum(r["net_weight_tons"] for r in group)
-        if group_weight <= 150 and merged_groups:
+        if group_weight <= VOYAGE_SMALL_FRAGMENT_TONS and merged_groups:
             prev = merged_groups[-1]
             prev_last = max(r["date"] for r in prev)
             group_first = min(r["date"] for r in group)
@@ -367,7 +371,7 @@ def generate_dashboard_data(all_records, from_cache=False):
                 continue
         merged_groups.append(group)
     # 開頭小段若與下一船日期連續，併入下一船。
-    if len(merged_groups) > 1 and sum(r["net_weight_tons"] for r in merged_groups[0]) <= 150:
+    if len(merged_groups) > 1 and sum(r["net_weight_tons"] for r in merged_groups[0]) <= VOYAGE_SMALL_FRAGMENT_TONS:
         first = merged_groups[0]
         next_group = merged_groups[1]
         if (max(r["date"] for r in first) - min(r["date"] for r in next_group)).days <= 1:
@@ -426,7 +430,8 @@ def generate_dashboard_data(all_records, from_cache=False):
             "dailyMap": v_daily,
             "hourlyTrips": v_h_trips,
             "hourlyWeight": [round(w, 1) for w in v_h_weight]
-            ,"dateHourMap": v_date_hour
+            ,"dateHourMap": v_date_hour,
+            "qualityFlags": (["超過建議船容量，請複核"] if v_weight > VOYAGE_CAPACITY_TONS + 100 else [])
         })
 
     # 保持時間順序：最早船次為第 1 船次，最新船次為最後一船次
@@ -437,7 +442,13 @@ def generate_dashboard_data(all_records, from_cache=False):
             "projectName": "轉爐石台北港專案 (617000928)",
             "dataNote": "本資料為匿名彙總統計，不含原始車號與磅單明細",
             "totalRecords": total_trips,
-            "fromCache": from_cache
+            "fromCache": from_cache,
+            "voyageRules": {
+                "capacityTons": VOYAGE_CAPACITY_TONS,
+                "splitMinTons": VOYAGE_SPLIT_MIN_TONS,
+                "smallFragmentTons": VOYAGE_SMALL_FRAGMENT_TONS,
+                "idleGapHours": VOYAGE_IDLE_GAP_HOURS
+            }
         },
         "kpi": {
             "totalWeightTons": total_weight_tons,

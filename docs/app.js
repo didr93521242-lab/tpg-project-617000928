@@ -2456,6 +2456,7 @@ document.addEventListener('DOMContentLoaded', () => {
           hourlyMap: v.hourlyTrips || Array(24).fill(0),
           hourlyWeightMap: v.hourlyWeight || Array(24).fill(0),
           dateHourMap: dateHourMap,
+          qualityFlags: v.qualityFlags || [],
           truckStatsMap: {} // 匿名化，不公開
         };
       });

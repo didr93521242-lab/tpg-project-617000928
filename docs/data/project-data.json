@@ -1,10 +1,16 @@
 {
   "meta": {
-    "publishedAt": "2026-11-03 17:23:18",
+    "publishedAt": "2026-11-03 17:37:52",
     "projectName": "轉爐石台北港專案 (617000928)",
     "dataNote": "本資料為匿名彙總統計，不含原始車號與磅單明細",
     "totalRecords": 164294,
-    "fromCache": true
+    "fromCache": false,
+    "voyageRules": {
+      "capacityTons": 34000,
+      "splitMinTons": 33900,
+      "smallFragmentTons": 150,
+      "idleGapHours": 1
+    }
   },
   "kpi": {
     "totalWeightTons": 3834158,
@@ -2398,7 +2404,8 @@
           "dateStr": "2020-12-14",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 2,
@@ -2782,7 +2789,8 @@
           "dateStr": "2020-12-25",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 3,
@@ -3120,7 +3128,8 @@
           "dateStr": "2021-01-15",
           "hourStr": "21:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 4,
@@ -3440,7 +3449,8 @@
           "dateStr": "2021-04-09",
           "hourStr": "20:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 5,
@@ -3760,7 +3770,8 @@
           "dateStr": "2021-04-30",
           "hourStr": "20:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 6,
@@ -4132,7 +4143,8 @@
           "dateStr": "2021-05-22",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 7,
@@ -4562,7 +4574,10 @@
           "dateStr": "2021-07-26",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": [
+        "超過建議船容量，請複核"
+      ]
     },
     {
       "index": 8,
@@ -4992,7 +5007,8 @@
           "dateStr": "2021-08-09",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 9,
@@ -5400,7 +5416,8 @@
           "dateStr": "2021-08-18",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 10,
@@ -5696,7 +5713,8 @@
           "dateStr": "2021-08-22",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 11,
@@ -6004,7 +6022,8 @@
           "dateStr": "2021-09-06",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 12,
@@ -6364,7 +6383,8 @@
           "dateStr": "2021-09-15",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 13,
@@ -6766,7 +6786,8 @@
           "dateStr": "2021-09-25",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 14,
@@ -7174,7 +7195,8 @@
           "dateStr": "2021-10-04",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 15,
@@ -7552,7 +7574,8 @@
           "dateStr": "2022-01-14",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 16,
@@ -7954,7 +7977,8 @@
           "dateStr": "2022-02-20",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 17,
@@ -8344,7 +8368,8 @@
           "dateStr": "2022-03-24",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 18,
@@ -8716,7 +8741,8 @@
           "dateStr": "2022-04-13",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 19,
@@ -9148,7 +9174,8 @@
           "dateStr": "2022-04-22",
           "hourStr": "20:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 20,
@@ -9562,7 +9589,8 @@
           "dateStr": "2022-05-12",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 21,
@@ -9922,7 +9950,8 @@
           "dateStr": "2022-05-21",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 22,
@@ -10242,7 +10271,8 @@
           "dateStr": "2022-06-07",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 23,
@@ -10550,7 +10580,8 @@
           "dateStr": "2022-06-19",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 24,
@@ -10870,7 +10901,8 @@
           "dateStr": "2022-07-09",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 25,
@@ -11310,7 +11342,8 @@
           "dateStr": "2022-07-17",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 26,
@@ -11594,7 +11627,8 @@
           "dateStr": "2022-07-19",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 27,
@@ -11932,7 +11966,8 @@
           "dateStr": "2022-07-30",
           "hourStr": "20:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 28,
@@ -12240,7 +12275,8 @@
           "dateStr": "2022-08-07",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 29,
@@ -12636,7 +12672,10 @@
           "dateStr": "2023-01-14",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": [
+        "超過建議船容量，請複核"
+      ]
     },
     {
       "index": 30,
@@ -12902,7 +12941,8 @@
           "dateStr": "2023-01-16",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 31,
@@ -13234,7 +13274,8 @@
           "dateStr": "2023-01-31",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 32,
@@ -13594,7 +13635,8 @@
           "dateStr": "2023-02-10",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 33,
@@ -13914,7 +13956,8 @@
           "dateStr": "2023-02-18",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 34,
@@ -14216,7 +14259,8 @@
           "dateStr": "2023-03-01",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 35,
@@ -14512,7 +14556,8 @@
           "dateStr": "2023-04-01",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 36,
@@ -14884,7 +14929,8 @@
           "dateStr": "2023-04-11",
           "hourStr": "11:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 37,
@@ -15250,7 +15296,8 @@
           "dateStr": "2023-04-20",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 38,
@@ -15640,7 +15687,8 @@
           "dateStr": "2023-05-24",
           "hourStr": "12:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 39,
@@ -15972,7 +16020,8 @@
           "dateStr": "2023-06-21",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 40,
@@ -16256,7 +16305,8 @@
           "dateStr": "2023-07-02",
           "hourStr": "12:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 41,
@@ -16570,7 +16620,8 @@
           "dateStr": "2023-07-15",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 42,
@@ -16906,7 +16957,10 @@
           "dateStr": "2023-07-22",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": [
+        "超過建議船容量，請複核"
+      ]
     },
     {
       "index": 43,
@@ -17172,7 +17226,8 @@
           "dateStr": "2023-07-24",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 44,
@@ -17486,7 +17541,8 @@
           "dateStr": "2023-08-13",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 45,
@@ -17758,7 +17814,8 @@
           "dateStr": "2023-08-17",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 46,
@@ -18024,7 +18081,8 @@
           "dateStr": "2023-09-01",
           "hourStr": "08:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 47,
@@ -18302,7 +18360,8 @@
           "dateStr": "2023-09-09",
           "hourStr": "11:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 48,
@@ -18574,7 +18633,8 @@
           "dateStr": "2023-11-01",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 49,
@@ -18840,7 +18900,8 @@
           "dateStr": "2023-11-08",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 50,
@@ -19230,7 +19291,8 @@
           "dateStr": "2024-05-23",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 51,
@@ -19588,7 +19650,10 @@
           "dateStr": "2024-05-29",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": [
+        "超過建議船容量，請複核"
+      ]
     },
     {
       "index": 52,
@@ -19860,7 +19925,8 @@
           "dateStr": "2024-05-31",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 53,
@@ -20226,7 +20292,8 @@
           "dateStr": "2024-06-20",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 54,
@@ -20534,7 +20601,8 @@
           "dateStr": "2024-07-05",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 55,
@@ -20866,7 +20934,8 @@
           "dateStr": "2024-07-30",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 56,
@@ -21186,7 +21255,8 @@
           "dateStr": "2024-08-07",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 57,
@@ -21488,7 +21558,8 @@
           "dateStr": "2024-08-18",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 58,
@@ -21796,7 +21867,8 @@
           "dateStr": "2024-08-22",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 59,
@@ -22150,7 +22222,8 @@
           "dateStr": "2024-09-08",
           "hourStr": "08:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 60,
@@ -22458,7 +22531,8 @@
           "dateStr": "2024-09-18",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 61,
@@ -22854,7 +22928,8 @@
           "dateStr": "2024-10-13",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 62,
@@ -23238,7 +23313,8 @@
           "dateStr": "2024-10-22",
           "hourStr": "12:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 63,
@@ -23558,7 +23634,8 @@
           "dateStr": "2024-11-03",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 64,
@@ -23960,7 +24037,8 @@
           "dateStr": "2024-11-15",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 65,
@@ -24081,7 +24159,7 @@
           "hourStr": "13:00"
         },
         "2024-12-02 14:00": {
-          "weight": 595.02,
+          "weight": 595.0200000000001,
           "trips": 26,
           "dateStr": "2024-12-02",
           "hourStr": "14:00"
@@ -24356,7 +24434,8 @@
           "dateStr": "2024-12-05",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 66,
@@ -24806,7 +24885,8 @@
           "dateStr": "2024-12-28",
           "hourStr": "22:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 67,
@@ -25208,7 +25288,8 @@
           "dateStr": "2025-01-11",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 68,
@@ -25610,7 +25691,8 @@
           "dateStr": "2025-01-22",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 69,
@@ -25942,7 +26024,8 @@
           "dateStr": "2025-02-05",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 70,
@@ -26262,7 +26345,8 @@
           "dateStr": "2025-02-17",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 71,
@@ -26570,7 +26654,8 @@
           "dateStr": "2025-03-20",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 72,
@@ -26942,7 +27027,8 @@
           "dateStr": "2025-04-03",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 73,
@@ -27274,7 +27360,8 @@
           "dateStr": "2025-04-11",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 74,
@@ -27361,7 +27448,7 @@
           "hourStr": "08:00"
         },
         "2025-04-18 09:00": {
-          "weight": 595.95,
+          "weight": 595.9499999999999,
           "trips": 26,
           "dateStr": "2025-04-18",
           "hourStr": "09:00"
@@ -27570,7 +27657,8 @@
           "dateStr": "2025-04-20",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 75,
@@ -27902,7 +27990,8 @@
           "dateStr": "2025-04-29",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 76,
@@ -28280,7 +28369,8 @@
           "dateStr": "2025-05-22",
           "hourStr": "11:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 77,
@@ -28600,7 +28690,8 @@
           "dateStr": "2025-06-10",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 78,
@@ -28920,7 +29011,8 @@
           "dateStr": "2025-06-21",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 79,
@@ -29316,7 +29408,8 @@
           "dateStr": "2025-07-24",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 80,
@@ -29636,7 +29729,8 @@
           "dateStr": "2025-08-02",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 81,
@@ -30096,7 +30190,8 @@
           "dateStr": "2025-08-27",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 82,
@@ -30468,7 +30563,8 @@
           "dateStr": "2025-09-04",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 83,
@@ -30852,7 +30948,8 @@
           "dateStr": "2025-09-16",
           "hourStr": "12:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 84,
@@ -31190,7 +31287,8 @@
           "dateStr": "2025-09-25",
           "hourStr": "20:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 85,
@@ -31492,7 +31590,8 @@
           "dateStr": "2025-09-29",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 86,
@@ -31870,7 +31969,8 @@
           "dateStr": "2025-10-10",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 87,
@@ -32248,7 +32348,8 @@
           "dateStr": "2025-10-27",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 88,
@@ -32608,7 +32709,8 @@
           "dateStr": "2025-11-06",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 89,
@@ -32974,7 +33076,8 @@
           "dateStr": "2025-11-27",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 90,
@@ -33394,7 +33497,8 @@
           "dateStr": "2025-12-11",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 91,
@@ -33796,7 +33900,8 @@
           "dateStr": "2025-12-21",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 92,
@@ -34204,7 +34309,10 @@
           "dateStr": "2025-12-29",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": [
+        "超過建議船容量，請複核"
+      ]
     },
     {
       "index": 93,
@@ -34522,7 +34630,8 @@
           "dateStr": "2026-01-01",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 94,
@@ -34900,7 +35009,8 @@
           "dateStr": "2026-01-11",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 95,
@@ -35226,7 +35336,8 @@
           "dateStr": "2026-01-20",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 96,
@@ -35353,7 +35464,7 @@
           "hourStr": "14:00"
         },
         "2026-01-31 15:00": {
-          "weight": 860.6899999999999,
+          "weight": 860.6899999999997,
           "trips": 37,
           "dateStr": "2026-01-31",
           "hourStr": "15:00"
@@ -35634,7 +35745,8 @@
           "dateStr": "2026-02-03",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 97,
@@ -36082,7 +36194,8 @@
           "dateStr": "2026-02-13",
           "hourStr": "08:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 98,
@@ -36478,7 +36591,8 @@
           "dateStr": "2026-03-12",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 99,
@@ -36898,7 +37012,8 @@
           "dateStr": "2026-03-25",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 100,
@@ -37236,7 +37351,8 @@
           "dateStr": "2026-04-01",
           "hourStr": "20:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 101,
@@ -37556,7 +37672,8 @@
           "dateStr": "2026-04-25",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 102,
@@ -37876,7 +37993,8 @@
           "dateStr": "2026-05-02",
           "hourStr": "17:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 103,
@@ -38218,7 +38336,8 @@
           "dateStr": "2026-05-12",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 104,
@@ -38309,7 +38428,7 @@
           "hourStr": "07:00"
         },
         "2026-05-22 08:00": {
-          "weight": 348.42,
+          "weight": 348.41999999999996,
           "trips": 15,
           "dateStr": "2026-05-22",
           "hourStr": "08:00"
@@ -38608,7 +38727,10 @@
           "dateStr": "2026-05-28",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": [
+        "超過建議船容量，請複核"
+      ]
     },
     {
       "index": 105,
@@ -38908,7 +39030,8 @@
           "dateStr": "2026-05-31",
           "hourStr": "09:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 106,
@@ -39280,7 +39403,8 @@
           "dateStr": "2026-06-10",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 107,
@@ -39630,7 +39754,8 @@
           "dateStr": "2026-06-20",
           "hourStr": "22:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 108,
@@ -39926,7 +40051,8 @@
           "dateStr": "2026-07-10",
           "hourStr": "13:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 109,
@@ -40240,7 +40366,8 @@
           "dateStr": "2026-07-28",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 110,
@@ -40648,7 +40775,8 @@
           "dateStr": "2026-08-12",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 111,
@@ -41020,7 +41148,8 @@
           "dateStr": "2026-08-22",
           "hourStr": "10:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 112,
@@ -41398,7 +41527,8 @@
           "dateStr": "2026-08-31",
           "hourStr": "11:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 113,
@@ -41736,7 +41866,8 @@
           "dateStr": "2026-09-08",
           "hourStr": "19:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 114,
@@ -42190,7 +42321,8 @@
           "dateStr": "2026-09-20",
           "hourStr": "15:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 115,
@@ -42522,7 +42654,8 @@
           "dateStr": "2026-09-30",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 116,
@@ -42918,7 +43051,8 @@
           "dateStr": "2026-10-13",
           "hourStr": "14:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 117,
@@ -43326,7 +43460,8 @@
           "dateStr": "2026-10-18",
           "hourStr": "16:00"
         }
-      }
+      },
+      "qualityFlags": []
     },
     {
       "index": 118,
@@ -43752,7 +43887,8 @@
           "dateStr": "2026-10-31",
           "hourStr": "18:00"
         }
-      }
+      },
+      "qualityFlags": []
     }
   ]
 }
