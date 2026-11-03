@@ -353,12 +353,12 @@ def generate_dashboard_data(all_records, from_cache=False):
     if current:
         voyage_groups.append(current)
 
-    # 容量切分後可能留下少量尾段（例如 20~99 噸）。若其日期與前/後船次連續，
+    # 容量切分後可能留下少量尾段（例如 20~150 噸）。若其日期與前/後船次連續，
     # 視為同一船的切分誤差並合併，避免產生不合理的小船次。
     merged_groups = []
     for group in voyage_groups:
         group_weight = sum(r["net_weight_tons"] for r in group)
-        if group_weight < 100 and merged_groups:
+        if group_weight <= 150 and merged_groups:
             prev = merged_groups[-1]
             prev_last = max(r["date"] for r in prev)
             group_first = min(r["date"] for r in group)
@@ -367,7 +367,7 @@ def generate_dashboard_data(all_records, from_cache=False):
                 continue
         merged_groups.append(group)
     # 開頭小段若與下一船日期連續，併入下一船。
-    if len(merged_groups) > 1 and sum(r["net_weight_tons"] for r in merged_groups[0]) < 100:
+    if len(merged_groups) > 1 and sum(r["net_weight_tons"] for r in merged_groups[0]) <= 150:
         first = merged_groups[0]
         next_group = merged_groups[1]
         if (max(r["date"] for r in first) - min(r["date"] for r in next_group)).days <= 1:
