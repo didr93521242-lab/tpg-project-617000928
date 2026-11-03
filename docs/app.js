@@ -1278,15 +1278,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const labels = [];
     const cumulativeData = [];
 
-    // Group cumulative tonnage by 2-hour slots or timestamps
-    voyage.records.forEach((r, idx) => {
-      runningTotal += r.netWeightTons;
-      if (idx % Math.max(1, Math.floor(voyage.records.length / 25)) === 0 || idx === voyage.records.length - 1) {
-        const timeStr = `${r.dateStr.slice(5)} ${String(r.date.getHours()).padStart(2, '0')}:${String(r.date.getMinutes()).padStart(2, '0')}`;
-        labels.push(timeStr);
+    // 本機模式使用原始記錄；線上匿名模式則使用精確 dateHourMap 重建曲線。
+    if (voyage.records && voyage.records.length) {
+      voyage.records.forEach((r, idx) => {
+        runningTotal += r.netWeightTons;
+        if (idx % Math.max(1, Math.floor(voyage.records.length / 25)) === 0 || idx === voyage.records.length - 1) {
+          const timeStr = `${r.dateStr.slice(5)} ${String(r.date.getHours()).padStart(2, '0')}:${String(r.date.getMinutes()).padStart(2, '0')}`;
+          labels.push(timeStr);
+          cumulativeData.push(Math.round(runningTotal));
+        }
+      });
+    } else {
+      const entries = Object.entries(voyage.dateHourMap || {}).sort((a, b) => a[0].localeCompare(b[0]));
+      entries.forEach(([key, item]) => {
+        runningTotal += Number(item.weight || 0);
+        labels.push(key.slice(5));
         cumulativeData.push(Math.round(runningTotal));
-      }
-    });
+      });
+    }
 
     renderChart('chartVoyageSCurve', 'line', {
       labels: labels,
