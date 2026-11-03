@@ -326,32 +326,42 @@ def generate_dashboard_data(all_records, from_cache=False):
         hourly_weight[h] += r["net_weight_tons"]
     hourly_weight_rounded = [round(w, 1) for w in hourly_weight]
 
-    unique_dates = sorted(list(set(r["date"] for r in all_records)))
-    voyage_date_groups = []
-    if unique_dates:
-        curr_group = [unique_dates[0]]
-        for i in range(1, len(unique_dates)):
-            prev = unique_dates[i - 1]
-            curr = unique_dates[i]
-            diff_days = (curr - prev).days
-            if diff_days > 4:
-                voyage_date_groups.append(curr_group)
-                curr_group = [curr]
-            else:
-                curr_group.append(curr)
-        if curr_group:
-            voyage_date_groups.append(curr_group)
+    # 船次分群：除日期間隔外，利用每小時作業中斷與約 34,000 噸裝載上限
+    # 切開同日連續兩船，避免兩船被合併成超過合理裝載量的單一船次。
+    hourly_groups = {}
+    for r in all_records:
+        key = (r["date"], r["hour"])
+        hourly_groups.setdefault(key, []).append(r)
+    ordered_hours = sorted(hourly_groups, key=lambda k: datetime.datetime.combine(k[0], datetime.time(k[1])))
+    voyage_groups = []
+    current = []
+    current_weight = 0.0
+    previous_dt = None
+    for key in ordered_hours:
+        bucket_dt = datetime.datetime.combine(key[0], datetime.time(key[1]))
+        bucket_records = hourly_groups[key]
+        bucket_weight = sum(r["net_weight_tons"] for r in bucket_records)
+        gap_hours = ((bucket_dt - previous_dt).total_seconds() / 3600) if previous_dt else 0
+        if current and ((bucket_dt.date() - previous_dt.date()).days > 4 or
+                        (gap_hours >= 1 and current_weight >= 33900)):
+            voyage_groups.append(current)
+            current = []
+            current_weight = 0.0
+        current.extend(bucket_records)
+        current_weight += bucket_weight
+        previous_dt = bucket_dt
+    if current:
+        voyage_groups.append(current)
 
     voyages = []
-    total_v = len(voyage_date_groups)
-    for idx, date_group in enumerate(voyage_date_groups):
+    total_v = len(voyage_groups)
+    for idx, v_recs in enumerate(voyage_groups):
         v_idx = idx + 1
-        v_date_set = set(date_group)
-        v_recs = [r for r in all_records if r["date"] in v_date_set]
         v_weight = round(sum(r["net_weight_tons"] for r in v_recs))
         v_trips = len(v_recs)
-        s_date = date_group[0].strftime("%Y-%m-%d")
-        e_date = date_group[-1].strftime("%Y-%m-%d")
+        date_list = sorted(set(r["date"] for r in v_recs))
+        s_date = date_list[0].strftime("%Y-%m-%d")
+        e_date = date_list[-1].strftime("%Y-%m-%d")
 
         v_daily = {}
         for r in v_recs:
@@ -385,7 +395,7 @@ def generate_dashboard_data(all_records, from_cache=False):
             "name": f"第 {v_idx} 船次 ({s_date[5:]} ~ {e_date[5:]})",
             "startDate": s_date,
             "endDate": e_date,
-            "durationDays": len(date_group),
+            "durationDays": len(date_list),
             "totalWeightTons": v_weight,
             "totalTrips": v_trips,
             "avgHourlyRateTons": avg_rate_tons,
