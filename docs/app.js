@@ -2392,7 +2392,12 @@ document.addEventListener('DOMContentLoaded', () => {
         clusterVoyages();
         switchView(state.currentView || 'overview');
       } else {
-        alert(`⚠️ API 即時連線失敗：\n${err.message}\n\n可能原因：\n1. 目前裝置未處於公司內部區域網路 (192.168.2.x)。\n2. 瀏覽器跨來源資源共享 (CORS) 限制。\n\n建議解法：\n• 確認已連線至公司內網或 VPN。\n• 或執行本機 publish_api.bat 批次檔產出靜態資料。`);
+        const isUnauthorized = /401|unauthorized/i.test(String(err.message));
+        if (isUnauthorized) {
+          alert(`⚠️ API 金鑰驗證失敗 (HTTP 401 Unauthorized)。\n\n請在「API 設定」重新輸入目前有效的 X-API-Key，按「儲存並載入」。\n\n注意：金鑰只會儲存在目前瀏覽器，不會從 GitHub Pages 自動帶入。`);
+        } else {
+          alert(`⚠️ API 即時連線失敗：\n${err.message}\n\n可能原因：\n1. 目前裝置未處於公司內部區域網路 (192.168.2.x)。\n2. 瀏覽器跨來源資源共享 (CORS) 限制。\n\n建議解法：\n• 確認已連線至公司內網或 VPN。\n• 或執行本機 publish_api.bat 批次檔產出靜態資料。`);
+        }
       }
     } finally {
       hideLoading();
